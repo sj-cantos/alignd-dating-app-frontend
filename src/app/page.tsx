@@ -1,103 +1,29 @@
 "use client"
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, Sparkles, Zap, MessageCircle, Shield, Menu, X, ChevronDown } from "lucide-react";
+import { Heart, Sparkles, Zap, MessageCircle, Shield } from "lucide-react";
 import heroImage from "@/assets/hero-dating.jpg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Home() {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const navigationItems = [
-    { name: 'Features', href: '#features' },
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Testimonials', href: '#testimonials' },
-    { name: 'Pricing', href: '/pricing' },
-  ];
-
-  const handleNavigation = (href: string) => {
-    if (href.startsWith('#')) {
-      // Smooth scroll to section
-      const element = document.querySelector(href);
-      element?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      // Navigate to different page
-      router.push(href);
-    }
-    setMobileMenuOpen(false);
-  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="border-b-brutal border-foreground bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
-              <Heart className="w-8 h-8 fill-primary text-primary" />
-              <h1 className="text-2xl font-display font-bold">Sparkle</h1>
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-6">
-              {navigationItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => handleNavigation(item.href)}
-                  className="text-sm font-semibold hover:text-primary transition-colors"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex gap-3 items-center">
-              <ThemeToggle />
-              <div className="hidden md:flex gap-3">
-                <Button variant="ghost" size="sm" onClick={() => router.push('/auth')}>Login</Button>
-                <Button variant="default" size="sm" onClick={() => router.push('/auth')}>Sign Up</Button>
-              </div>
-              
-              {/* Mobile Menu Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
-            </div>
+      <nav className="border-b-brutal border-foreground bg-card">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Heart className="w-8 h-8 fill-primary text-primary" />
+            <h1 className="text-2xl font-display font-bold">Sparkle</h1>
           </div>
-
-          {/* Mobile Navigation Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-foreground/20">
-              <div className="flex flex-col gap-3 mt-4">
-                {navigationItems.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => handleNavigation(item.href)}
-                    className="text-left text-sm font-semibold hover:text-primary transition-colors py-2"
-                  >
-                    {item.name}
-                  </button>
-                ))}
-                <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-foreground/20">
-                  <Button variant="ghost" size="sm" onClick={() => router.push('/auth')} className="justify-start">
-                    Login
-                  </Button>
-                  <Button variant="default" size="sm" onClick={() => router.push('/auth')} className="justify-start">
-                    Sign Up
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="flex gap-3 items-center">
+            <ThemeToggle />
+            <Button variant="ghost" size="sm" onClick={() => router.push('/auth')}>Login</Button>
+            <Button variant="default" size="sm" onClick={() => router.push('/auth')}>Sign Up</Button>
+          </div>
         </div>
       </nav>
 
@@ -338,7 +264,7 @@ interface TestimonialCardProps {
 
 const TestimonialCard = ({ quote, name, color }: TestimonialCardProps) => (
   <Card className={`${color} border-brutal border-foreground shadow-brutal p-6 rotate-[1deg] hover:rotate-0 transition-transform`}>
-    <p className="text-lg font-semibold mb-4 text-foreground">&quot;{quote}&quot;</p>
+    <p className="text-lg font-semibold mb-4 text-foreground">"{quote}"</p>
     <p className="font-bold text-foreground">— {name}</p>
   </Card>
 );
