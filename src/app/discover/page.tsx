@@ -1,5 +1,5 @@
 "use client"
-import { useAuth } from '@/contexts/AuthContext';
+// import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -10,16 +10,16 @@ export default function Discover() {
   const { user, logout, isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/auth');
-    }
-  }, [isAuthenticated, loading, router]);
+  // useEffect(() => {
+  //   if (!loading && !isAuthenticated) {
+  //     router.push('/auth');
+  //   }
+  // }, [isAuthenticated, loading, router]);
 
-  const handleLogout = () => {
-    logout();
-    router.push('/auth');
-  };
+  // const handleLogout = () => {
+  //   logout();
+  //   router.push('/auth');
+  // };
 
   if (loading) {
     return (
@@ -55,7 +55,7 @@ export default function Discover() {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={handleLogout}
+              // onClick={handleLogout}
               className="flex items-center space-x-2"
             >
               <LogOut className="w-4 h-4" />

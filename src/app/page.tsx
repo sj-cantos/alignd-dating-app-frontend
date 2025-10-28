@@ -11,7 +11,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background bg-grid-pattern">
       {/* Navigation */}
       <nav className="border-b-brutal border-foreground bg-card transition-all duration-300 ease-in-out">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
