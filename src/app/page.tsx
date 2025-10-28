@@ -13,33 +13,37 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background bg-grid-pattern">
       {/* Navigation */}
-      <nav className="border-b-brutal border-foreground bg-card transition-all duration-300 ease-in-out">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer group" onClick={() => router.push('/')}>
-            <Heart className="w-8 h-8 fill-primary text-primary transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-            <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Charm'd</h1>
+      <div className="p-2">
+        <nav className="bg-pink-400 border-brutal border-foreground shadow-brutal mx-auto max-w-7xl">
+          <div className="px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center gap-2 cursor-pointer group" onClick={() => router.push('/')}>
+              <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
+                <Heart className="w-6 h-6 fill-background text-background" />
+              </div>
+              <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Charm'd</h1>
+            </div>
+            <div className="flex gap-3 items-center">
+              <ThemeToggle />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => router.push('/auth')}
+                className="border-2 border-foreground shadow-brutal-sm hover:shadow-brutal hover:-translate-x-1 hover:-translate-y-1 transition-all duration-300 bg-background"
+              >
+                Login
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={() => router.push('/auth')}
+                className="border-2 border-foreground shadow-brutal-sm hover:shadow-brutal hover:-translate-x-1 hover:-translate-y-1 transition-all duration-300 bg-primary text-background"
+              >
+                Sign Up
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-3 items-center">
-            <ThemeToggle />
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => router.push('/auth')}
-              className="transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm"
-            >
-              Login
-            </Button>
-            <Button 
-              variant="default" 
-              size="sm" 
-              onClick={() => router.push('/auth')}
-              className="transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm"
-            >
-              Sign Up
-            </Button>
-          </div>
-        </div>
-      </nav>
+        </nav>
+      </div>
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 md:py-24">
