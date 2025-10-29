@@ -1,132 +1,48 @@
-"use client"
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-// import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { RegisterForm } from '@/components/auth/RegisterForm';
 import { Heart } from 'lucide-react';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
-  // const { login, register } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (isLogin) {
-        await login(email, password);
-        toast.success('Welcome back!');
-        router.push('/discover');
-      } else {
-        if (!name.trim()) {
-          toast.error('Name is required');
-          return;
-        }
-        // await register(name, email, password);
-        toast.success('Account created successfully!');
-        router.push('/discover');
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Something went wrong');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push('/discover');
     }
-  };
+  }, [isAuthenticated, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-background bg-grid-pattern flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center justify-center mb-8">
-          <Heart className="w-12 h-12 text-primary fill-primary" />
-          <h1 className="text-4xl font-display font-bold ml-2">Sparkle</h1>
+    <div className="min-h-screen bg- flex flex-col items-center justify-center bg-gray-50 p-4 gap-2">
+      <div className="flex items-center gap-2 cursor-pointer group " onClick={() => router.push('/')}>
+        <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
+          <Heart className="w-6 h-6 fill-background text-background" />
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-2xl">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
-            </CardTitle>
-            <CardDescription>
-              {isLogin ? 'Sign in to continue your journey' : 'Start your dating adventure'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={!isLogin}
-                    placeholder="Your name"
-                    disabled={loading}
-                  />
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="you@example.com"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  minLength={6}
-                  disabled={loading}
-                />
-                {!isLogin && (
-                  <p className="text-xs text-muted-foreground">
-                    Password must be at least 6 characters long
-                  </p>
-                )}
-              </div>
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
-              </Button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                disabled={loading}
-              >
-                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+        <h1 className="text-3xl font-display font-bold transition-colors m-5 duration-300 group-hover:text-primary">Charmd</h1>
       </div>
+      {isLogin ? (
+        <LoginForm onToggleMode={() => setIsLogin(false)} />
+      ) : (
+        <RegisterForm onToggleMode={() => setIsLogin(true)} />
+      )}
     </div>
   );
 }

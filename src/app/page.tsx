@@ -1,16 +1,37 @@
-"use client"
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Heart, Sparkles, Zap, MessageCircle, Shield } from "lucide-react";
-import heroImage from "@/assets/hero-dating.jpg";
-import { ThemeToggle } from "@/components/ThemeToggle";
+'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { Heart, MessageCircle, Shield, Sparkles, Zap } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import heroImage from '../../public/hero-dating.jpg'
+import { Card } from '@/components/ui/card';
 export default function Home() {
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-  return (
+  useEffect(() => {
+    if (!loading) {
+      if (isAuthenticated) {
+        router.push('/discover');
+      } else {
+        router.push('/');
+      }
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+return (
     <div className="min-h-screen bg-background bg-grid-pattern">
       {/* Navigation */}
       <div className="p-2">
@@ -20,7 +41,7 @@ export default function Home() {
               <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
                 <Heart className="w-6 h-6 fill-background text-background" />
               </div>
-              <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Charm'd</h1>
+              <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Charmd</h1>
             </div>
             <div className="flex gap-3 items-center">
               <ThemeToggle />

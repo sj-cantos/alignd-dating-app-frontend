@@ -44,49 +44,7 @@
 }
 
 @layer base {
-  :root {
-    /* Legacy CSS variables for compatibility */
-    --background: 48 100% 96%;
-    --foreground: 0 0% 0%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    --primary: 328 100% 54%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 54 100% 62%;
-    --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 84 100% 67%;
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 0%;
-    --input: 0 0% 100%;
-    --ring: 0 0% 0%;
-    --radius: 0.375rem;
-    
-    /* Neubrutalism specific tokens */
-    --shadow-brutal: 6px 6px 0px 0px hsl(0 0% 0%);
-    --shadow-brutal-sm: 4px 4px 0px 0px hsl(0 0% 0%);
-    --shadow-brutal-lg: 8px 8px 0px 0px hsl(0 0% 0%);
-    --border-brutal: 3px;
-    
-    --blue-bright: 200 100% 50%;
-    --pink-bright: 328 100% 54%;
-    --yellow-bright: 54 100% 62%;
-    --green-bright: 84 100% 67%;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+  
 
   .dark {
     --background: 0 0% 10%;
