@@ -6,17 +6,26 @@ import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requireCompleteProfile?: boolean;
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth();
+export function ProtectedRoute({ children, requireCompleteProfile = false }: ProtectedRouteProps) {
+  const { isAuthenticated, loading, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/auth');
+    if (!loading) {
+      if (!isAuthenticated) {
+        router.push('/auth');
+        return;
+      }
+
+      if (requireCompleteProfile && user && !user.isProfileComplete) {
+        router.push('/setup');
+        return;
+      }
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, user, router, requireCompleteProfile]);
 
   if (loading) {
     return (
@@ -26,7 +35,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || (requireCompleteProfile && user && !user.isProfileComplete)) {
     return null;
   }
 

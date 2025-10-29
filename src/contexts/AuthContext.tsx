@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { User, authApi, LoginRequest, RegisterRequest } from '@/lib/api';
+import { User, authApi, profileApi, LoginRequest, RegisterRequest, SetupProfileRequest, UpdateProfileRequest } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
@@ -11,6 +11,9 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  setupProfile: (data: SetupProfileRequest) => Promise<void>;
+  updateProfile: (data: UpdateProfileRequest) => Promise<void>;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -66,6 +69,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     Cookies.remove('token');
     setUser(null);
+    router.push('/');
+  };
+
+  const setupProfile = async (data: SetupProfileRequest) => {
+    try {
+      const response = await profileApi.setupProfile(data);
+      setUser(response.user);
+      router.push('/discover');
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const updateProfile = async (data: UpdateProfileRequest) => {
+    try {
+      const response = await profileApi.updateProfile(data);
+      setUser(response.user);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const userData = await authApi.getProfile();
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      throw error;
+    }
   };
 
   const value = {
@@ -74,6 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     register,
     logout,
+    setupProfile,
+    updateProfile,
+    refreshUser,
     isAuthenticated,
   };
 

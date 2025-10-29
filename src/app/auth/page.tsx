@@ -14,7 +14,7 @@ export default function Auth() {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.push('/discover');
+      router.push('/setup');
     }
   }, [isAuthenticated, loading, router]);
 

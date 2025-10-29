@@ -37,10 +37,33 @@ api.interceptors.response.use(
   }
 );
 
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  NON_BINARY = 'non-binary',
+}
+
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name: string;
+  age?: number;
+  gender?: Gender;
+  bio?: string;
+  interests?: string[];
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+  preferences?: {
+    ageRange: { min: number; max: number };
+    interestedInGender: Gender | Gender[];
+  };
+  profilePictureUrl?: string;
+  isActive?: boolean;
+  isProfileComplete?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthResponse {
@@ -59,6 +82,32 @@ export interface RegisterRequest {
   name: string;
 }
 
+export interface SetupProfileRequest {
+  age: number;
+  gender: Gender;
+  bio: string;
+  interests: string[];
+  latitude: number;
+  longitude: number;
+  minAge: number;
+  maxAge: number;
+  interestedInGender: Gender | Gender[];
+  photoUrl: string;
+}
+
+export interface UpdateProfileRequest {
+  age?: number;
+  gender?: Gender;
+  bio?: string;
+  interests?: string[];
+  latitude?: number;
+  longitude?: number;
+  minAge?: number;
+  maxAge?: number;
+  interestedInGender?: Gender | Gender[];
+  photoUrl?: string;
+}
+
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', data);
@@ -72,7 +121,29 @@ export const authApi = {
   },
 
   getProfile: async (): Promise<User> => {
-    const response = await api.get('/auth/profile');
+    console.log('Getting user profile, token:', Cookies.get('token'));
+    const response = await api.get('/users/me');
+    console.log('Get profile response:', response.data);
+    return response.data;
+  },
+};
+
+export const profileApi = {
+  setupProfile: async (data: SetupProfileRequest): Promise<{ message: string; user: User }> => {
+    console.log('Making setup profile request with data:', data);
+    console.log('Token from cookies:', Cookies.get('token'));
+    const response = await api.post('/users/profile/setup', data);
+    console.log('Setup profile response:', response.data);
+    return response.data;
+  },
+
+  updateProfile: async (data: UpdateProfileRequest): Promise<{ message: string; user: User }> => {
+    const response = await api.patch('/users/profile', data);
+    return response.data;
+  },
+
+  getProfile: async (): Promise<{ user: User }> => {
+    const response = await api.get('/users/profile');
     return response.data;
   },
 };
