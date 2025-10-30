@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,7 +28,7 @@ export default function ProfileSetup() {
     minAge: 18,
     maxAge: 50,
     interestedInGender: [Gender.FEMALE] as Gender[],
-    photoUrl: '',
+    profilePictureUrl: '',
   });
 
   const [currentInterest, setCurrentInterest] = useState('');
@@ -109,13 +109,13 @@ export default function ProfileSetup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast.error('User not authenticated. Please log in again.');
       router.push('/auth');
       return;
     }
-    
+
     if (formData.interests.length === 0) {
       toast.error('Please add at least one interest');
       return;
@@ -126,7 +126,7 @@ export default function ProfileSetup() {
       return;
     }
 
-    if (!formData.photoUrl.trim()) {
+    if (!formData.profilePictureUrl.trim()) {
       toast.error('Please add a photo URL');
       return;
     }
@@ -141,13 +141,13 @@ export default function ProfileSetup() {
       toast.success('Profile setup completed!');
     } catch (error: unknown) {
       console.error('Profile setup error:', error);
-      
+
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string; error?: string } }; message?: string };
-        const errorMessage = axiosError.response?.data?.message || 
-                           axiosError.response?.data?.error ||
-                           axiosError.message ||
-                           'Failed to setup profile';
+        const errorMessage = axiosError.response?.data?.message ||
+          axiosError.response?.data?.error ||
+          axiosError.message ||
+          'Failed to setup profile';
         toast.error(errorMessage);
         console.error('Response data:', axiosError.response?.data);
       } else {
@@ -194,7 +194,7 @@ export default function ProfileSetup() {
               {step === 1 && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold">Basic Information</h3>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="age">Age</Label>
@@ -207,11 +207,11 @@ export default function ProfileSetup() {
                         onChange={(e) => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) || 18 }))}
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label>Gender</Label>
-                      <RadioGroup 
-                        value={formData.gender} 
+                      <RadioGroup
+                        value={formData.gender}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value as Gender }))}
                       >
                         <div className="flex items-center space-x-2">
@@ -238,8 +238,8 @@ export default function ProfileSetup() {
                         id="photo"
                         type="url"
                         placeholder="https://example.com/your-photo.jpg"
-                        value={formData.photoUrl}
-                        onChange={(e) => setFormData(prev => ({ ...prev, photoUrl: e.target.value }))}
+                        value={formData.profilePictureUrl}
+                        onChange={(e) => setFormData(prev => ({ ...prev, profilePictureUrl: e.target.value }))}
                       />
                     </div>
                   </div>
@@ -255,7 +255,7 @@ export default function ProfileSetup() {
               {step === 2 && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold">About You</h3>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
                     <textarea
@@ -305,14 +305,14 @@ export default function ProfileSetup() {
               {step === 3 && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold">Dating Preferences</h3>
-                  
+
                   <div className="space-y-4">
                     <Label>I&apos;m interested in</Label>
-                    <RadioGroup 
+                    <RadioGroup
                       value={
                         formData.interestedInGender.length === 3 ? 'everyone' :
-                        formData.interestedInGender.length === 1 ? formData.interestedInGender[0] :
-                        'custom'
+                          formData.interestedInGender.length === 1 ? formData.interestedInGender[0] :
+                            'custom'
                       }
                       onValueChange={handleGenderPreferenceChange}
                     >
@@ -343,11 +343,11 @@ export default function ProfileSetup() {
                       max={100}
                       step={1}
                       value={[formData.minAge, formData.maxAge]}
-                      onValueChange={(values) => 
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          minAge: values[0], 
-                          maxAge: values[1] 
+                      onValueChange={(values) =>
+                        setFormData(prev => ({
+                          ...prev,
+                          minAge: values[0],
+                          maxAge: values[1]
                         }))
                       }
                       className="w-full"
@@ -368,20 +368,20 @@ export default function ProfileSetup() {
               {step === 4 && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold">Location</h3>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2">
                       <MapPin className="w-5 h-5 text-muted-foreground" />
                       <span className="text-sm">
-                        {locationPermission === 'granted' 
-                          ? 'Location detected automatically' 
+                        {locationPermission === 'granted'
+                          ? 'Location detected automatically'
                           : locationPermission === 'denied'
-                          ? 'Using default location (New York)'
-                          : 'Detecting location...'
+                            ? 'Using default location (New York)'
+                            : 'Detecting location...'
                         }
                       </span>
                     </div>
-                    
+
                     <p className="text-sm text-muted-foreground">
                       Your location helps us show you people nearby. We only use your general area, not your exact location.
                     </p>
@@ -395,7 +395,7 @@ export default function ProfileSetup() {
                       <p><strong>Interests:</strong> {formData.interests.join(', ')}</p>
                       <p><strong>Looking for:</strong> {
                         formData.interestedInGender.length === 3 ? 'Everyone' :
-                        formData.interestedInGender.join(', ')
+                          formData.interestedInGender.join(', ')
                       }</p>
                       <p><strong>Age preference:</strong> {formData.minAge} - {formData.maxAge}</p>
                     </div>

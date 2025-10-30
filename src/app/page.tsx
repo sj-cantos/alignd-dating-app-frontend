@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Heart, MessageCircle, Shield, Sparkles, Zap } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -10,18 +10,23 @@ import Image from 'next/image';
 import heroImage from '../../public/hero-dating.jpg'
 import { Card } from '@/components/ui/card';
 export default function Home() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
       if (isAuthenticated) {
-        router.push('/discover');
+        // Check if profile is complete
+        if (user?.isProfileComplete) {
+          router.push('/discover');
+        } else {
+          router.push('/setup');
+        }
       } else {
         router.push('/');
       }
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, user?.isProfileComplete, router]);
 
   if (loading) {
     return (

@@ -92,7 +92,7 @@ export interface SetupProfileRequest {
   minAge: number;
   maxAge: number;
   interestedInGender: Gender | Gender[];
-  photoUrl: string;
+  profilePictureUrl: string;
 }
 
 export interface UpdateProfileRequest {
@@ -105,7 +105,7 @@ export interface UpdateProfileRequest {
   minAge?: number;
   maxAge?: number;
   interestedInGender?: Gender | Gender[];
-  photoUrl?: string;
+  profilePictureUrl: string;
 }
 
 export const authApi = {
