@@ -175,7 +175,7 @@ export default function Profile() {
 
   return (
     <ProtectedRoute requireCompleteProfile={true}>
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-background p-4 pb-24 md:pb-4">
         <div className="max-w-4xl mx-auto">
           {/* Header with navigation and edit button */}
           <div className="mb-6">

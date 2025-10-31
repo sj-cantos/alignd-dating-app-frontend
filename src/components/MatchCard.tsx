@@ -29,8 +29,8 @@ export function MatchCard({ match, onMessage, onUnmatch }: MatchCardProps) {
   };
 
   return (
-    <Card className="bg-card border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 overflow-hidden group animate-fade-in-up">
-      <div className="relative h-48 bg-muted">
+    <Card className="bg-card border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 overflow-hidden group animate-fade-in-up relative">
+      <div className="absolute top-0 left-0 right-0 h-52 bg-muted">
         {!imageError && match.profilePictureUrl ? (
           <img
             src={match.profilePictureUrl}
@@ -58,7 +58,7 @@ export function MatchCard({ match, onMessage, onUnmatch }: MatchCardProps) {
         )}
       </div>
 
-      <CardContent className="p-4">
+      <CardContent className="p-4 mt-48">
         <div className="space-y-3">
           {/* Name and Age */}
           <div className="flex items-center justify-between">

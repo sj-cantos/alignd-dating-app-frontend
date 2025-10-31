@@ -98,7 +98,7 @@ export default function Discover() {
 
   return (
     <ProtectedRoute requireCompleteProfile={true}>
-      <div className="min-h-screen bg-background bg-grid-pattern-sm p-4">
+      <div className="min-h-screen bg-background bg-grid-pattern-sm p-4 pb-24 md:pb-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
     
@@ -111,7 +111,7 @@ export default function Discover() {
                 loading={swipeLoading}
               />
             ) : (
-              <div className="bg-card border-brutal border-border shadow-brutal-lg p-12 text-center animate-fade-in-up">
+              <div className="bg-card border-brutal mt-20 border-border shadow-brutal-lg p-12 text-center animate-fade-in-up">
                 <Users size={80} className="mx-auto mb-4 text-muted-foreground" />
                 <h2 className="text-2xl font-black text-foreground mb-4">No More Profiles!</h2>
                 <p className="text-muted-foreground font-medium mb-6">

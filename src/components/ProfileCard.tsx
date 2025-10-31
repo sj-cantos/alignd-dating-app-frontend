@@ -106,10 +106,10 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   const nopeOpacity = Math.max(0, Math.min(1, -dragOffset.x / 100));
 
   return (
-    <Card className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none rounded-lg">
+    <Card className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none rounded-lg relative">
   <div
     ref={cardRef}
-    className={`relative h-96 bg-muted ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} touch-none overflow-hidden rounded-lg`}
+    className={`absolute top-0 left-0 right-0 h-96 bg-muted ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} touch-none overflow-hidden`}
     style={{
       transform: preview 
         ? 'translateX(0) translateY(0) rotate(0deg)'
@@ -180,7 +180,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   </div>
 
   {/* Card Content */}
-  <CardContent className="p-6">
+  <CardContent className="p-6 mt-96">
     <div className="space-y-4">
       {/* Name and Age */}
       <div className="flex items-center justify-between">

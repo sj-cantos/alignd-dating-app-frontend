@@ -66,13 +66,13 @@ export default function Matches() {
 
   return (
     <ProtectedRoute requireCompleteProfile={true}>
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 p-4 pb-24 md:pb-4">
         <div className="max-w-6xl mx-auto">
           
 
           {/* Matches Grid */}
           {matches.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {matches.map((match, index) => (
                 <div
                   key={match.id}
