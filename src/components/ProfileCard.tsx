@@ -192,7 +192,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
       onPointerMove={interactive ? handlePointerMove : undefined}
       onPointerUp={interactive ? handlePointerUp : undefined}
     >
-  <div className="absolute top-0 left-0 right-0 h-64 sm:h-72 md:h-80 bg-muted overflow-hidden pointer-events-none">
+  <div className="absolute top-0 left-0 right-0 h-75 sm:h-72 md:h-80 bg-muted overflow-hidden pointer-events-none">
     {/* Profile Image */}
     {!imageError && profile.profilePictureUrl ? (
       <img
@@ -245,7 +245,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   </div>
 
   {/* Card Content */}
-  <CardContent className="p-4  sm:p-5 md:p-6 mt-64 sm:mt-72 md:mt-80 pointer-events-none">
+  <CardContent className="p-4  sm:p-5 md:p-6 mt-69 sm:mt-72 md:mt-80 pointer-events-none">
     <div className="space-y-3 sm:space-y-4 pointer-events-auto">
       {/* Name and Age */}
       <div className="flex items-center justify-between">

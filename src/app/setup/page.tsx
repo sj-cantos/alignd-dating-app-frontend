@@ -55,9 +55,18 @@ export default function ProfileSetup() {
     }
   }, [user, router]);
 
-  // Get user location
+  // Get user location (with sane fallbacks and timeout)
   useEffect(() => {
-    if (navigator.geolocation) {
+    const fallbackToCity = () => {
+      // Keep our NYC defaults on failure/denied
+      setFormData(prev => ({
+        ...prev,
+        latitude: 14.320019,
+        longitude: 120.9935385,
+      }));
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setFormData(prev => ({
@@ -70,14 +79,18 @@ export default function ProfileSetup() {
         (error) => {
           console.error('Error getting location:', error);
           setLocationPermission('denied');
-          // Use default location (you can set your city's coordinates)
-          setFormData(prev => ({
-            ...prev,
-            latitude: 0, // New York default
-            longitude: 0,
-          }));
+          fallbackToCity();
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 10000, // 10s timeout so UI doesn’t hang
+          maximumAge: 600000, // accept a cached fix up to 10 minutes
         }
       );
+    } else {
+      // Geolocation not supported
+      setLocationPermission('denied');
+      fallbackToCity();
     }
   }, []);
 

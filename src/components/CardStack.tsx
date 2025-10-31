@@ -32,7 +32,7 @@ export function CardStack({ profiles, onSwipe, loading = false }: CardStackProps
   }
 
   return (
-    <div className="relative z-0 w-full max-w-sm mx-auto h-[500px] sm:h-[550px] md:h-[600px]">
+    <div className="relative z-0 w-full max-w-sm mx-auto h-[580px] sm:h-[550px] md:h-[600px]">
       {profiles.slice(0, visibleCards).map((profile, index) => {
         const isTop = index === 0;
         const zIndex = visibleCards - index;

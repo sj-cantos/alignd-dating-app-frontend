@@ -140,7 +140,7 @@ export interface MatchUser {
   profilePictureUrl?: string;
   gender: Gender;
   interests: string[];
-  location: {
+  location?: {
     latitude: number;
     longitude: number;
   };
