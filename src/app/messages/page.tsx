@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
-import { matchesApi, MatchUser } from '@/lib/api';
+import { matchesApi, MatchUser, chatApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { ArrowLeft, Send, Users, MessageCircle } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
+import Cookies from 'js-cookie';
 
 interface Message {
   id: string;
@@ -38,10 +40,46 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     loadConversations();
   }, []);
+
+  // Connect socket when user is available
+  useEffect(() => {
+    if (!user) return;
+    const token = Cookies.get('token');
+    if (!token) return;
+    const s = io('http://localhost:8000/chat', {
+      transports: ['websocket'],
+      auth: { token },
+    });
+    setSocket(s);
+    s.on('connect_error', (err) => {
+      console.error('Socket connect error', err);
+    });
+    s.on('message', (msg: Message) => {
+      const currentTargetId = selectedConversation?.match.id;
+      if (!currentTargetId) return;
+      const involves = msg.senderId === currentTargetId || msg.receiverId === currentTargetId;
+      if (!involves) return;
+      setMessages((prev) => {
+        // de-dupe by id
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
+      // update last message for conversation list
+      setConversations((prev) => prev.map((c) => c.matchId === currentTargetId ? { ...c, lastMessage: msg } : c));
+    });
+    return () => { s.disconnect(); setSocket(null); };
+  }, [user]);
+
+  // Join current room when a conversation is selected and socket is connected
+  useEffect(() => {
+    if (!socket || !selectedConversation) return;
+    socket.emit('join', { targetUserId: selectedConversation.match.id });
+  }, [socket, selectedConversation]);
 
   useEffect(() => {
     if (selectedMatchId && conversations.length > 0) {
@@ -80,35 +118,14 @@ export default function Messages() {
     }
   };
 
-  const loadMessages = async (matchId: string) => {
-    // Mock messages for now since backend messaging isn't implemented
-    const mockMessages: Message[] = [
-      {
-        id: '1',
-        senderId: matchId,
-        receiverId: user?.id || '',
-        content: `Hey ${user?.name}! Thanks for the match 😊`,
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        isRead: true,
-      },
-      {
-        id: '2',
-        senderId: user?.id || '',
-        receiverId: matchId,
-        content: 'Hi! Nice to meet you! Your profile caught my eye 💖',
-        timestamp: new Date(Date.now() - 43200000).toISOString(),
-        isRead: true,
-      },
-      {
-        id: '3',
-        senderId: matchId,
-        receiverId: user?.id || '',
-        content: 'That\'s so sweet! I love your interests too. What do you like to do for fun?',
-        timestamp: new Date(Date.now() - 21600000).toISOString(),
-        isRead: false,
-      },
-    ];
-    setMessages(mockMessages);
+  const loadMessages = async (targetUserId: string) => {
+    try {
+      const { messages } = await chatApi.getHistory(targetUserId);
+      setMessages(messages as any);
+    } catch (e) {
+      console.error('Failed to load messages', e);
+      setMessages([]);
+    }
   };
 
   const handleSendMessage = async () => {
@@ -116,30 +133,13 @@ export default function Messages() {
 
     try {
       setSendingMessage(true);
-      
-      // Mock sending message
-      const mockMessage: Message = {
-        id: Date.now().toString(),
-        senderId: user?.id || '',
-        receiverId: selectedConversation.matchId,
-        content: newMessage,
-        timestamp: new Date().toISOString(),
-        isRead: false,
-      };
-
-      setMessages(prev => [...prev, mockMessage]);
+      const targetUserId = selectedConversation.match.id;
+      const outgoing = newMessage;
       setNewMessage('');
-      
-      // Update last message in conversation
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.matchId === selectedConversation.matchId 
-            ? { ...conv, lastMessage: mockMessage }
-            : conv
-        )
-      );
-
-      toast.success('Message sent!');
+      // ensure joined
+      socket?.emit('join', { targetUserId });
+      // send message; rely on server echo to render, avoiding duplicates
+      socket?.emit('message', { targetUserId, content: outgoing });
     } catch (error) {
       console.error('Failed to send message:', error);
       toast.error('Failed to send message');
@@ -291,18 +291,18 @@ export default function Messages() {
                       {messages.map((message) => (
                         <div
                           key={message.id}
-                          className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
+                          className={`flex ${message.senderId === user?.id ? 'justify-start' : 'justify-end'}`}
                         >
                           <div
                             className={`max-w-xs lg:max-w-md px-4 py-2 border-2 border-border shadow-brutal ${
                               message.senderId === user?.id
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-card text-foreground'
+                                ? 'bg-card text-foreground'
+                                : 'bg-primary text-primary-foreground'
                             }`}
                           >
                             <p className="font-medium">{message.content}</p>
                             <p className={`text-xs mt-1 ${
-                              message.senderId === user?.id ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                              message.senderId === user?.id ? 'text-muted-foreground' : 'text-primary-foreground/80'
                             }`}>
                               {new Date(message.timestamp).toLocaleTimeString()}
                             </p>

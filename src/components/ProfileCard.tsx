@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Heart, X, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,22 @@ interface ProfileCardProps {
 export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  // drag state
+  const [dragging, setDragging] = useState(false);
+  const [dx, setDx] = useState(0);
+  const [dy, setDy] = useState(0);
+  const pointerIdRef = useRef<number | null>(null);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+  const threshold = 120; // px to trigger swipe
+
+  // Reset transforms when loading state changes or profile changes
+  useEffect(() => {
+    setDragging(false);
+    setDx(0);
+    setDy(0);
+    pointerIdRef.current = null;
+    startRef.current = null;
+  }, [loading, profile?.id]);
 
   const handleLike = () => {
     if (!loading) onSwipe(SwipeAction.LIKE);
@@ -24,8 +40,71 @@ export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardPr
     if (!loading) onSwipe(SwipeAction.PASS);
   };
 
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (loading) return;
+    // Only primary button / single touch
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointerIdRef.current = e.pointerId;
+    startRef.current = { x: e.clientX, y: e.clientY };
+    setDragging(true);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragging) return;
+    if (pointerIdRef.current !== e.pointerId) return;
+    const start = startRef.current;
+    if (!start) return;
+    const ndx = e.clientX - start.x;
+    const ndy = e.clientY - start.y;
+    setDx(ndx);
+    setDy(ndy);
+  };
+
+  const onPointerUpOrCancel = (e: React.PointerEvent) => {
+    if (pointerIdRef.current !== null && e.pointerId !== pointerIdRef.current) return;
+    const finalDx = dx;
+    // Release capture
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+    pointerIdRef.current = null;
+    startRef.current = null;
+
+    // Decide swipe
+    if (!loading) {
+      if (finalDx > threshold) {
+        onSwipe(SwipeAction.LIKE);
+      } else if (finalDx < -threshold) {
+        onSwipe(SwipeAction.PASS);
+      }
+    }
+
+    // Reset position
+    setDragging(false);
+    setDx(0);
+    setDy(0);
+  };
+
+  const rotation = Math.max(-20, Math.min(20, dx * 0.05));
+  const likeOpacity = Math.min(1, Math.max(0, dx / threshold));
+  const nopeOpacity = Math.min(1, Math.max(0, -dx / threshold));
+
   return (
-    <Card className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up">
+    <Card
+      className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none touch-pan-y"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUpOrCancel}
+      onPointerCancel={onPointerUpOrCancel}
+      style={{
+        transform: `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`,
+        transition: dragging ? 'none' : 'transform 200ms ease',
+        cursor: dragging ? 'grabbing' : 'grab',
+      }}
+    >
       <div className="relative h-96 bg-muted">
         {!imageError && profile.profilePictureUrl ? (
           <img
@@ -42,6 +121,24 @@ export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardPr
             <Users size={80} className="text-muted-foreground" />
           </div>
         )}
+
+        {/* Swipe badges */}
+        <div className="pointer-events-none absolute inset-0">
+          {/* LIKE badge */}
+          <div
+            className="absolute top-4 left-4 px-4 py-2 border-brutal border-border bg-success text-success-foreground font-black shadow-brutal transform -rotate-6"
+            style={{ opacity: likeOpacity }}
+          >
+            LIKE
+          </div>
+          {/* NOPE badge */}
+          <div
+            className="absolute top-4 right-4 px-4 py-2 border-brutal border-border bg-destructive text-destructive-foreground font-black shadow-brutal transform rotate-6"
+            style={{ opacity: nopeOpacity }}
+          >
+            NOPE
+          </div>
+        </div>
         
         {/* Loading overlay */}
         {loading && (

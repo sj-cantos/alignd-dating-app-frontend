@@ -218,4 +218,11 @@ export const matchesApi = {
   },
 };
 
+export const chatApi = {
+  getHistory: async (targetUserId: string, limit = 50): Promise<{ messages: any[] }> => {
+    const response = await api.get(`/chat/history/${targetUserId}`, { params: { limit } });
+    return response.data;
+  },
+};
+
 export default api;
