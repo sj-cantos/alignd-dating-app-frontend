@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,60 @@ interface Conversation {
 }
 
 export default function Messages() {
+  return (
+    <ProtectedRoute requireCompleteProfile={true}>
+      <Suspense fallback={<MessagesLoading />}>
+        <MessagesContent />
+      </Suspense>
+    </ProtectedRoute>
+  );
+}
+
+function MessagesLoading() {
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-3xl font-black text-foreground mb-2">💬 MESSAGES</h1>
+          <p className="text-muted-foreground font-medium">Loading your conversations...</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+          <div className="lg:col-span-1 bg-card border-brutal border-border shadow-brutal-lg rounded-lg p-4">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-3/4"></div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="h-12 w-12 bg-muted rounded-full"></div>
+                    <div className="flex-1 space-y-1">
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                      <div className="h-3 bg-muted rounded w-3/4"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-2 bg-card border-brutal border-border shadow-brutal-lg rounded-lg p-4">
+            <div className="animate-pulse h-full flex flex-col">
+              <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
+              <div className="flex-1 space-y-3">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
+                    <div className="h-10 bg-muted rounded-lg w-1/3"></div>
+                  </div>
+                ))}
+              </div>
+              <div className="h-12 bg-muted rounded-lg mt-4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MessagesContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -209,21 +263,20 @@ export default function Messages() {
   }
 
   return (
-    <ProtectedRoute requireCompleteProfile={true}>
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-7xl mx-auto">
-   
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto">
+ 
 
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-            {/* Conversations Sidebar */}
-            <div className={`lg:col-span-1 ${showChat ? 'hidden lg:block' : 'block'}`}>
-              <div className="bg-card border-brutal border-border shadow-brutal h-full overflow-hidden">
-                <div className="bg-primary border-b-brutal border-border p-4">
-                  <h2 className="font-black text-primary-foreground text-lg">CONVERSATIONS</h2>
-                </div>
-                
-                <div className="overflow-y-auto h-full">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+          {/* Conversations Sidebar */}
+          <div className={`lg:col-span-1 ${showChat ? 'hidden lg:block' : 'block'}`}>
+            <div className="bg-card border-brutal border-border shadow-brutal h-full overflow-hidden">
+              <div className="bg-primary border-b-brutal border-border p-4">
+                <h2 className="font-black text-primary-foreground text-lg">CONVERSATIONS</h2>
+              </div>
+              
+              <div className="overflow-y-auto h-full">
                   {conversations.length > 0 ? (
                     conversations.map((conversation) => (
                       <button
@@ -386,6 +439,5 @@ export default function Messages() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
   );
 }
