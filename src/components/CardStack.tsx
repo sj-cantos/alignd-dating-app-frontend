@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ProfileCard } from './ProfileCard';
+import { SwipeableCard } from './SwipeableCard';
 import { MatchUser, SwipeAction } from '@/lib/api';
 
 interface CardStackProps {
@@ -31,7 +32,7 @@ export function CardStack({ profiles, onSwipe, loading = false }: CardStackProps
   }
 
   return (
-    <div className="relative w-full max-w-sm mx-auto h-[500px] sm:h-[550px] md:h-[600px]">
+    <div className="relative z-0 w-full max-w-sm mx-auto h-[500px] sm:h-[550px] md:h-[600px]">
       {profiles.slice(0, visibleCards).map((profile, index) => {
         const isTop = index === 0;
         const zIndex = visibleCards - index;
@@ -51,11 +52,11 @@ export function CardStack({ profiles, onSwipe, loading = false }: CardStackProps
               transition: isTop ? 'none' : 'all 0.3s ease-out',
             }}
           >
-            <ProfileCard
-              profile={profile}
-              onSwipe={isTop ? handleSwipe : () => {}}
-              loading={isTop && loading}
-            />
+            {isTop ? (
+              <SwipeableCard profile={profile} onSwipe={handleSwipe} loading={loading} />
+            ) : (
+              <ProfileCard profile={profile} onSwipe={() => {}} loading={false} preview={true} />
+            )}
           </div>
         );
       })}

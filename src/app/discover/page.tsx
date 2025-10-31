@@ -135,20 +135,20 @@ export default function Discover() {
 
           {/* Action Buttons */}
           {profiles.length > 0 && (
-            <div className="flex justify-center gap-4 sm:gap-6 animate-fade-in-up animation-delay-300">
+            <div className="relative z-10 flex justify-center gap-4 sm:gap-6 animate-fade-in-up animation-delay-300">
               <Button
                 onClick={() => handleSwipe(SwipeAction.PASS)}
                 disabled={swipeLoading}
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-card hover:bg-destructive/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
               >
-                <X size={28} className="text-destructive sm:w-8 sm:h-8" />
+                <X size={28} className="text-white sm:w-8 sm:h-8" />
               </Button>
               <Button
                 onClick={() => handleSwipe(SwipeAction.LIKE)}
                 disabled={swipeLoading}
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-card hover:bg-success/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
+                className="w-14 h-14 bg-green-600 sm:w-16 sm:h-16 rounded-full  hover:bg-success/90 text-white border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
               >
-                <Heart size={28} className="text-success sm:w-8 sm:h-8" />
+                <Heart size={28} color='white' className="sm:w-8 sm:h-8" />
               </Button>
             </div>
           )}

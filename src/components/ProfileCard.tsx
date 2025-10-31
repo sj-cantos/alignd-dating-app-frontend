@@ -11,9 +11,10 @@ interface ProfileCardProps {
   onSwipe: (action: SwipeAction) => void;
   loading?: boolean;
   preview?: boolean; // When true, disables swipe and hides action buttons
+  interactive?: boolean; // When false, disables internal drag handlers (used with TinderCard)
 }
 
-export function ProfileCard({ profile, onSwipe, loading = false, preview = false }: ProfileCardProps) {
+export function ProfileCard({ profile, onSwipe, loading = false, preview = false, interactive = true }: ProfileCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -36,72 +37,32 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
     }
   }, [profile?.id, loading]);
 
-  // Add global mouse/touch event listeners for dragging
-  useEffect(() => {
-    if (preview) return;
-
-    const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        e.preventDefault();
-        handleDragMove(e.clientX, e.clientY);
-      }
-    };
-
-    const handleGlobalMouseUp = () => {
-      if (isDragging) {
-        handleDragEnd();
-      }
-    };
-
-    const handleGlobalTouchMove = (e: TouchEvent) => {
-      if (isDragging && e.touches[0]) {
-        e.preventDefault();
-        handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
-      }
-    };
-
-    const handleGlobalTouchEnd = () => {
-      if (isDragging) {
-        handleDragEnd();
-      }
-    };
-
-    if (isDragging) {
-      window.addEventListener('mousemove', handleGlobalMouseMove);
-      window.addEventListener('mouseup', handleGlobalMouseUp);
-      window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
-      window.addEventListener('touchend', handleGlobalTouchEnd);
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleGlobalMouseMove);
-      window.removeEventListener('mouseup', handleGlobalMouseUp);
-      window.removeEventListener('touchmove', handleGlobalTouchMove);
-      window.removeEventListener('touchend', handleGlobalTouchEnd);
-    };
-  }, [isDragging, preview]);
-
-  const flyOffAndSwipe = (liked: boolean) => {
-    if (!cardRef.current) return;
-    setIsSwiping(true);
-    const direction = liked ? 1 : -1;
-    const flyOffDistance = window.innerWidth;
-    cardRef.current.style.transition = 'transform 0.3s ease-out';
-    cardRef.current.style.transform = `translateX(${direction * flyOffDistance}px) rotate(${direction * 20}deg)`;
-    // Call parent swipe after animation so UI feels natural
-    setTimeout(() => {
-      onSwipe(liked ? SwipeAction.LIKE : SwipeAction.PASS);
-    }, 300);
-  };
-
   const handleLike = () => {
     if (loading || isSwiping) return;
-    flyOffAndSwipe(true);
+    
+    if (!cardRef.current) return;
+    setIsSwiping(true);
+    const flyOffDistance = window.innerWidth;
+    cardRef.current.style.transition = 'transform 0.3s ease-out';
+    cardRef.current.style.transform = `translateX(${flyOffDistance}px) rotate(20deg)`;
+    
+    setTimeout(() => {
+      onSwipe(SwipeAction.LIKE);
+    }, 300);
   };
 
   const handlePass = () => {
     if (loading || isSwiping) return;
-    flyOffAndSwipe(false);
+    
+    if (!cardRef.current) return;
+    setIsSwiping(true);
+    const flyOffDistance = window.innerWidth;
+    cardRef.current.style.transition = 'transform 0.3s ease-out';
+    cardRef.current.style.transform = `translateX(-${flyOffDistance}px) rotate(-20deg)`;
+    
+    setTimeout(() => {
+      onSwipe(SwipeAction.PASS);
+    }, 300);
   };
 
   const handleDragStart = (clientX: number, clientY: number) => {
@@ -120,10 +81,26 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   const handleDragEnd = () => {
     if (!isDragging || isSwiping || loading) return;
     setIsDragging(false);
+    
     if (Math.abs(dragOffset.x) > swipeThreshold) {
+      // Swipe detected - animate card off screen
+      const direction = dragOffset.x > 0 ? 'right' : 'left';
+      
+      if (cardRef.current) {
+        const flyOffDistance = window.innerWidth;
+        cardRef.current.style.transition = 'transform 0.3s ease-out';
+        cardRef.current.style.transform = `translateX(${direction === 'right' ? flyOffDistance : -flyOffDistance}px) rotate(${direction === 'right' ? 20 : -20}deg)`;
+      }
+
+      setIsSwiping(true);
       const liked = dragOffset.x > 0;
-      flyOffAndSwipe(liked);
+      
+      // Call parent swipe after animation so UI feels natural
+      setTimeout(() => {
+        onSwipe(liked ? SwipeAction.LIKE : SwipeAction.PASS);
+      }, 300);
     } else {
+      // Return to center
       setDragOffset({ x: 0, y: 0 });
     }
   };
@@ -131,8 +108,17 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   // Mouse events
   const handleMouseDown = (e: React.MouseEvent) => {
     if (preview) return;
-    e.preventDefault();
     handleDragStart(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (preview) return;
+    handleDragMove(e.clientX, e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    if (preview) return;
+    handleDragEnd();
   };
 
   // Touch events
@@ -144,29 +130,69 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
     }
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (preview) return;
+    const touch = e.touches[0];
+    if (touch) {
+      handleDragMove(touch.clientX, touch.clientY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (preview) return;
+    handleDragEnd();
+  };
+
+  // Pointer events (robust drag across mouse/touch)
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (preview || isSwiping || loading) return;
+    try {
+      cardRef.current?.setPointerCapture(e.pointerId);
+    } catch {}
+    handleDragStart(e.clientX, e.clientY);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (preview) return;
+    handleDragMove(e.clientX, e.clientY);
+  };
+
+  const handlePointerUp = () => {
+    if (preview) return;
+    handleDragEnd();
+  };
+
   // Visuals
-  const rotation = isDragging ? dragOffset.x / 20 : 0;
-  const opacity = isDragging ? Math.max(0.5, 1 - Math.abs(dragOffset.x) / 300) : 1;
+  const rotation = interactive && isDragging ? dragOffset.x / 20 : 0;
+  const opacity = interactive && isDragging ? Math.max(0.5, 1 - Math.abs(dragOffset.x) / 300) : 1;
   const likeOpacity = Math.max(0, Math.min(1, dragOffset.x / 100));
   const nopeOpacity = Math.max(0, Math.min(1, -dragOffset.x / 100));
 
   return (
     <Card 
       ref={cardRef}
-      className={`w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg overflow-hidden animate-fade-in-up select-none rounded-lg relative ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
+      className={`w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg overflow-hidden animate-fade-in-up select-none rounded-lg relative touch-none ${preview ? 'cursor-default' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
       style={{
-        transform: preview 
+        transform: preview || !interactive
           ? 'translateX(0px) translateY(0px) rotate(0deg)'
           : isDragging || dragOffset.x !== 0 || dragOffset.y !== 0
           ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`
           : 'translateX(0px) translateY(0px) rotate(0deg)',
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-        opacity: preview ? 1 : opacity,
+        transition: interactive && isDragging ? 'none' : 'transform 0.3s ease-out',
+        opacity: preview || !interactive ? 1 : opacity,
       }}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
+      onMouseDown={interactive ? handleMouseDown : undefined}
+      onMouseMove={interactive ? handleMouseMove : undefined}
+      onMouseUp={interactive ? handleMouseUp : undefined}
+      onMouseLeave={interactive ? handleMouseUp : undefined}
+      onTouchStart={interactive ? handleTouchStart : undefined}
+      onTouchMove={interactive ? handleTouchMove : undefined}
+      onTouchEnd={interactive ? handleTouchEnd : undefined}
+      onPointerDown={interactive ? handlePointerDown : undefined}
+      onPointerMove={interactive ? handlePointerMove : undefined}
+      onPointerUp={interactive ? handlePointerUp : undefined}
     >
-  <div className="absolute top-0 left-0 right-0 h-72 sm:h-80 md:h-96 bg-muted overflow-hidden pointer-events-none">
+  <div className="absolute top-0 left-0 right-0 h-64 sm:h-72 md:h-80 bg-muted overflow-hidden pointer-events-none">
     {/* Profile Image */}
     {!imageError && profile.profilePictureUrl ? (
       <img
@@ -186,7 +212,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
     )}
 
     {/* Top gradient overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
     {/* Swipe indicators */}
     {!preview && isDragging && (
@@ -219,8 +245,8 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   </div>
 
   {/* Card Content */}
-  <CardContent className="p-4 sm:p-5 md:p-6 mt-72 sm:mt-80 md:mt-96">
-    <div className="space-y-3 sm:space-y-4">
+  <CardContent className="p-4  sm:p-5 md:p-6 mt-64 sm:mt-72 md:mt-80 pointer-events-none">
+    <div className="space-y-3 sm:space-y-4 pointer-events-auto">
       {/* Name and Age */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-black text-foreground">{profile.name}</h2>
@@ -259,28 +285,6 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
               </span>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      {!preview && (
-        <div className="flex gap-3 sm:gap-4 pt-3 sm:pt-4">
-          <Button
-            onClick={handlePass}
-            disabled={loading}
-            className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-sm sm:text-base md:text-lg rounded"
-          >
-            <X size={20} className="mr-1 sm:mr-2 sm:w-6 sm:h-6" />
-            PASS
-          </Button>
-          <Button
-            onClick={handleLike}
-            disabled={loading}
-            className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-sm sm:text-base md:text-lg rounded"
-          >
-            <Heart size={20} className="mr-1 sm:mr-2 sm:w-6 sm:h-6" />
-            LIKE
-          </Button>
         </div>
       )}
     </div>
