@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 import { Heart } from 'lucide-react';
+import Image from 'next/image';
+import logoImage from '../../../public/logo.png';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -36,9 +38,9 @@ export default function Auth() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-2">
       <div className="flex items-center gap-2 cursor-pointer group " onClick={() => router.push('/')}>
         <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
-          <Heart/>
+          <Image src={logoImage} alt="Alignd Logo" width={32} height={32} className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl font-display font-bold transition-colors m-5 duration-300 group-hover:text-primary">Alignd</h1>
+        <h1 className="text-3xl font-display font-bold transition-colors m-5 duration-300 group-hover:text-foreground">Alignd</h1>
       </div>
       {isLogin ? (
         <LoginForm onToggleMode={() => setIsLogin(false)} />

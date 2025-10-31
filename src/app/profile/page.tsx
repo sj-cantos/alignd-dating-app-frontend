@@ -188,7 +188,7 @@ export default function Profile() {
     
     {/* HEADER */}
     <div className="mb-6 md:mb-8 animate-fade-in-up">
-      <h1 className="text-3xl md:text-4xl font-black text-foreground bg-blue-bright px-4 py-3 border-brutal border-border shadow-brutal inline-block transform rotate-1">
+      <h1 className="text-xl md:text-2xl font-black text-foreground bg-blue-bright px-4 py-2 border-brutal border-border shadow-brutal inline-block transform rotate-1">
         👤 PROFILE
       </h1>
       <p className="text-sm md:text-base text-muted-foreground font-medium mt-3 ml-1">

@@ -95,20 +95,20 @@ export default function Discover() {
 
   return (
     <ProtectedRoute requireCompleteProfile={true}>
-      <div className="min-h-screen bg-background bg-grid-pattern-sm p-4 pb-24 md:pb-4">
+      <div className="min-h-screen bg-background bg-grid-pattern-sm p-3 sm:p-4 pb-24 md:pb-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="mb-6 md:mb-8 animate-fade-in-up">
-            <h1 className="text-3xl md:text-4xl font-black text-foreground bg-primary px-4 py-3 border-brutal border-border shadow-brutal inline-block transform -rotate-1">
+          <div className="mb-4 sm:mb-6 md:mb-8 animate-fade-in-up">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground bg-pink-400 px-2 sm:px-4 py-1.5 sm:py-2 border-brutal border-border shadow-brutal inline-block transform -rotate-1">
               💘 DISCOVER
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground font-medium mt-3 ml-1">
+            <p className="text-xs sm:text-sm md:text-base text-muted-foreground font-medium mt-2 sm:mt-3 ml-1">
               Swipe to find your perfect match
             </p>
           </div>
     
           {/* Profile Cards Stack */}
-          <div className="relative mb-8 animation-delay-200">
+          <div className="relative mb-6 sm:mb-8 animation-delay-200">
             {profiles.length > 0 ? (
               <CardStack
                 profiles={profiles}
@@ -135,20 +135,20 @@ export default function Discover() {
 
           {/* Action Buttons */}
           {profiles.length > 0 && (
-            <div className="flex justify-center gap-6 animate-fade-in-up animation-delay-300">
+            <div className="flex justify-center gap-4 sm:gap-6 animate-fade-in-up animation-delay-300">
               <Button
                 onClick={() => handleSwipe(SwipeAction.PASS)}
                 disabled={swipeLoading}
-                className="w-16 h-16 rounded-full bg-card hover:bg-destructive/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-card hover:bg-destructive/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
               >
-                <X size={32} className="text-destructive" />
+                <X size={28} className="text-destructive sm:w-8 sm:h-8" />
               </Button>
               <Button
                 onClick={() => handleSwipe(SwipeAction.LIKE)}
                 disabled={swipeLoading}
-                className="w-16 h-16 rounded-full bg-card hover:bg-success/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-card hover:bg-success/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
               >
-                <Heart size={32} className="text-success" />
+                <Heart size={28} className="text-success sm:w-8 sm:h-8" />
               </Button>
             </div>
           )}

@@ -64,8 +64,9 @@ export function Navigation() {
               className="flex items-center cursor-pointer transform hover:rotate-0 transition-transform duration-200"
               onClick={() => router.push('/discover')}
             >
-              <div className="bg-gradient-to-r from-primary to-pink-bright text-white px-4 py-2 border-brutal border-border shadow-brutal-sm font-black text-xl">
-                💘 ALIGND
+              <div className="bg-primary flex border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
+                <Heart className="w-6 h-6 fill-background text-background" />
+                <h1 className="text-2xl font-display font-bold transition-colors duration-300 text-white">Align'd</h1>
               </div>
             </div>
 

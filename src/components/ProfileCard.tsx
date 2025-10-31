@@ -36,6 +36,51 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
     }
   }, [profile?.id, loading]);
 
+  // Add global mouse/touch event listeners for dragging
+  useEffect(() => {
+    if (preview) return;
+
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        e.preventDefault();
+        handleDragMove(e.clientX, e.clientY);
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        handleDragEnd();
+      }
+    };
+
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (isDragging && e.touches[0]) {
+        e.preventDefault();
+        handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+
+    const handleGlobalTouchEnd = () => {
+      if (isDragging) {
+        handleDragEnd();
+      }
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleGlobalMouseMove);
+      window.addEventListener('mouseup', handleGlobalMouseUp);
+      window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
+      window.addEventListener('touchend', handleGlobalTouchEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('touchmove', handleGlobalTouchMove);
+      window.removeEventListener('touchend', handleGlobalTouchEnd);
+    };
+  }, [isDragging, preview]);
+
   const flyOffAndSwipe = (liked: boolean) => {
     if (!cardRef.current) return;
     setIsSwiping(true);
@@ -85,31 +130,18 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
 
   // Mouse events
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (preview) return;
     e.preventDefault();
     handleDragStart(e.clientX, e.clientY);
   };
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      e.preventDefault();
-      handleDragMove(e.clientX, e.clientY);
-    }
-  };
-  const handleMouseUp = () => handleDragEnd();
 
   // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
+    if (preview) return;
     const touch = e.touches[0];
-    handleDragStart(touch.clientX, touch.clientY);
-  };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    handleDragMove(touch.clientX, touch.clientY);
-  };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
-    handleDragEnd();
+    if (touch) {
+      handleDragStart(touch.clientX, touch.clientY);
+    }
   };
 
   // Visuals
@@ -121,7 +153,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   return (
     <Card 
       ref={cardRef}
-      className={`w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg overflow-hidden animate-fade-in-up select-none rounded-lg relative ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing touch-none'}`}
+      className={`w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg overflow-hidden animate-fade-in-up select-none rounded-lg relative ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
       style={{
         transform: preview 
           ? 'translateX(0px) translateY(0px) rotate(0deg)'
@@ -131,17 +163,10 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
         transition: isDragging ? 'none' : 'transform 0.3s ease-out',
         opacity: preview ? 1 : opacity,
       }}
-      {...(!preview && {
-        onMouseDown: handleMouseDown,
-        onMouseMove: handleMouseMove,
-        onMouseUp: handleMouseUp,
-        onMouseLeave: handleMouseUp,
-        onTouchStart: handleTouchStart,
-        onTouchMove: handleTouchMove,
-        onTouchEnd: handleTouchEnd,
-      })}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
     >
-  <div className="absolute top-0 left-0 right-0 h-96 bg-muted overflow-hidden pointer-events-none">
+  <div className="absolute top-0 left-0 right-0 h-72 sm:h-80 md:h-96 bg-muted overflow-hidden pointer-events-none">
     {/* Profile Image */}
     {!imageError && profile.profilePictureUrl ? (
       <img
@@ -194,19 +219,19 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   </div>
 
   {/* Card Content */}
-  <CardContent className="p-6 mt-86">
-    <div className="space-y-4">
+  <CardContent className="p-4 sm:p-5 md:p-6 mt-72 sm:mt-80 md:mt-96">
+    <div className="space-y-3 sm:space-y-4">
       {/* Name and Age */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-black text-foreground">{profile.name}</h2>
-        <span className="text-lg font-bold bg-secondary px-3 py-1 border-brutal border-border transform -rotate-2 text-secondary-foreground rounded">
+        <h2 className="text-xl sm:text-2xl font-black text-foreground">{profile.name}</h2>
+        <span className="text-base sm:text-lg font-bold bg-secondary px-2 sm:px-3 py-1 border-brutal border-border transform -rotate-2 text-secondary-foreground rounded">
           {profile.age}
         </span>
       </div>
 
       {/* Bio */}
       {profile.bio && (
-        <p className="text-foreground/80 font-medium leading-relaxed border-l-brutal border-primary pl-3">
+        <p className="text-sm sm:text-base text-foreground/80 font-medium leading-relaxed border-l-brutal border-primary pl-3">
           {profile.bio}
         </p>
       )}
@@ -214,20 +239,20 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
       {/* Distance */}
       {typeof profile.distance === 'number' && !isNaN(profile.distance) && (
         <div className="flex items-center gap-2 text-muted-foreground">
-          <MapPin size={16} className="text-destructive" />
-          <span className="font-medium">{Math.round(profile.distance)} km away</span>
+          <MapPin size={14} className="text-destructive sm:w-4 sm:h-4" />
+          <span className="text-sm font-medium">{Math.round(profile.distance)} km away</span>
         </div>
       )}
 
       {/* Interests */}
       {profile.interests && profile.interests.length > 0 && (
         <div className="space-y-2">
-          <h3 className="font-black text-foreground text-sm uppercase tracking-wide">Interests</h3>
-          <div className="flex flex-wrap gap-2">
+          <h3 className="font-black text-foreground text-xs sm:text-sm uppercase tracking-wide">Interests</h3>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {profile.interests.slice(0, 6).map((interest, index) => (
               <span
                 key={index}
-                className={`px-3 py-1 bg-blue-bright/20 border-2 border-border text-foreground font-bold text-xs uppercase rounded-sm transform transition-transform hover:scale-105`}
+                className={`px-2 sm:px-3 py-0.5 sm:py-1 bg-blue-bright/20 border-2 border-border text-foreground font-bold text-[10px] sm:text-xs uppercase rounded-sm transform transition-transform hover:scale-105`}
                 style={{ transform: `rotate(${(index % 2 === 0 ? 1 : -1) * (Math.random() * 3 + 1)}deg)` }}
               >
                 {interest}
@@ -239,21 +264,21 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
 
       {/* Action Buttons */}
       {!preview && (
-        <div className="flex gap-4 pt-4">
+        <div className="flex gap-3 sm:gap-4 pt-3 sm:pt-4">
           <Button
             onClick={handlePass}
             disabled={loading}
-            className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-lg rounded"
+            className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-sm sm:text-base md:text-lg rounded"
           >
-            <X size={24} className="mr-2" />
+            <X size={20} className="mr-1 sm:mr-2 sm:w-6 sm:h-6" />
             PASS
           </Button>
           <Button
             onClick={handleLike}
             disabled={loading}
-            className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-lg rounded"
+            className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-sm sm:text-base md:text-lg rounded"
           >
-            <Heart size={24} className="mr-2" />
+            <Heart size={20} className="mr-1 sm:mr-2 sm:w-6 sm:h-6" />
             LIKE
           </Button>
         </div>

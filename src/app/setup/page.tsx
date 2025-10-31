@@ -234,7 +234,7 @@ export default function ProfileSetup() {
   <div className="w-full max-w-2xl">
     {/* Header */}
     <div className="mb-6 md:mb-8 text-center animate-fade-in-up">
-      <h1 className="text-3xl md:text-4xl font-black text-foreground bg-pink-bright px-4 py-3 border-brutal border-border shadow-brutal inline-block transform -rotate-1">
+      <h1 className="text-xl md:text-2xl font-black text-foreground bg-pink-bright px-4 py-2 border-brutal border-border shadow-brutal inline-block transform -rotate-1">
         💖 SETUP PROFILE
       </h1>
       <p className="text-sm md:text-base text-muted-foreground font-medium mt-3">
@@ -242,10 +242,10 @@ export default function ProfileSetup() {
       </p>
     </div>
 
-    <Card className="rounded-lg shadow-brutal-lg overflow-hidden">
+    <Card className="bg-card border-brutal border-border shadow-brutal-lg">
       <CardHeader className="px-6 pt-6">
-        <CardTitle className="text-2xl font-black">Step {step} of 4</CardTitle>
-        <CardDescription className="text-sm text-muted-foreground mt-1">
+        <CardTitle className="text-2xl font-black text-foreground">Step {step} of 4</CardTitle>
+        <CardDescription className="text-sm text-muted-foreground mt-1 font-medium">
           Let's set up your dating profile to find your perfect match
         </CardDescription>
       </CardHeader>

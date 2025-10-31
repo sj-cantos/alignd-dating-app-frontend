@@ -43,10 +43,11 @@ return (
         <nav className="bg-pink-400 border-brutal border-foreground shadow-brutal mx-auto max-w-7xl">
           <div className="px-4 py-3 flex justify-between items-center">
             <div className="flex items-center gap-2 cursor-pointer group" onClick={() => router.push('/')}>
-              <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
+              <div className="bg-primary flex border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
                 <Heart className="w-6 h-6 fill-background text-background" />
+                <h1 className="text-2xl font-display font-bold transition-colors duration-300 text-white">Align'd</h1>
               </div>
-              <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Alignd</h1>
+              
             </div>
             <div className="flex gap-2 md:gap-3 items-center">
               <ThemeToggle />
