@@ -275,7 +275,15 @@ function MessagesContent() {
   return (
     <div className="min-h-screen bg-background p-4 pb-24 md:pb-4">
       <div className="max-w-7xl mx-auto">
- 
+        {/* Header */}
+        <div className="mb-6 md:mb-8 animate-fade-in-up">
+          <h1 className="text-3xl md:text-4xl font-black text-foreground bg-accent px-4 py-3 border-brutal border-border shadow-brutal inline-block transform -rotate-1">
+            💬 MESSAGES
+          </h1>
+          <p className="text-sm md:text-base text-muted-foreground font-medium mt-3 ml-1">
+            Chat with your matches
+          </p>
+        </div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">

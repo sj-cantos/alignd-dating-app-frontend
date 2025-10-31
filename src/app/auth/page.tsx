@@ -36,7 +36,7 @@ export default function Auth() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-2">
       <div className="flex items-center gap-2 cursor-pointer group " onClick={() => router.push('/')}>
         <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
-          <Heart className="w-6 h-6 fill-background text-background" />
+          <Heart/>
         </div>
         <h1 className="text-3xl font-display font-bold transition-colors m-5 duration-300 group-hover:text-primary">Alignd</h1>
       </div>

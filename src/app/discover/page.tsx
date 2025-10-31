@@ -2,24 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { ProfileCard } from '@/components/ProfileCard';
+import { CardStack } from '@/components/CardStack';
 import { MatchNotification } from '@/components/MatchNotification';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { matchesApi, MatchUser, SwipeAction } from '@/lib/api';
 import { toast } from 'sonner';
-import { Heart, RotateCcw, Users } from 'lucide-react';
+import { Heart, RotateCcw, Users, X } from 'lucide-react';
 
 export default function Discover() {
   const { user, logout } = useAuth();
   const [profiles, setProfiles] = useState<MatchUser[]>([]);
-  const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [swipeLoading, setSwipeLoading] = useState(false);
   const [showMatchNotification, setShowMatchNotification] = useState(false);
   const [matchedUserName, setMatchedUserName] = useState('');
-
-  const currentProfile = profiles[currentProfileIndex];
 
   useEffect(() => {
     loadProfiles();
@@ -30,7 +27,6 @@ export default function Discover() {
       setLoading(true);
       const data = await matchesApi.getPotentialMatches(10);
       setProfiles(data);
-      setCurrentProfileIndex(0);
     } catch (error) {
       console.error('Failed to load profiles:', error);
       toast.error('Failed to load profiles');
@@ -40,6 +36,7 @@ export default function Discover() {
   };
 
   const handleSwipe = async (action: SwipeAction) => {
+    const currentProfile = profiles[0];
     if (!currentProfile || swipeLoading) return;
 
     try {
@@ -55,12 +52,12 @@ export default function Discover() {
         setShowMatchNotification(true);
       }
 
-      // Move to next profile
-      if (currentProfileIndex < profiles.length - 1) {
-        setCurrentProfileIndex(currentProfileIndex + 1);
-      } else {
-        // Load more profiles if we've reached the end
-        await loadProfiles();
+      // Remove swiped profile from stack
+      setProfiles(prev => prev.slice(1));
+
+      // Load more profiles if running low
+      if (profiles.length <= 3) {
+        loadProfiles();
       }
 
       // Show appropriate toast
@@ -101,16 +98,24 @@ export default function Discover() {
       <div className="min-h-screen bg-background bg-grid-pattern-sm p-4 pb-24 md:pb-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
+          <div className="mb-6 md:mb-8 animate-fade-in-up">
+            <h1 className="text-3xl md:text-4xl font-black text-foreground bg-primary px-4 py-3 border-brutal border-border shadow-brutal inline-block transform -rotate-1">
+              💘 DISCOVER
+            </h1>
+            <p className="text-sm md:text-base text-muted-foreground font-medium mt-3 ml-1">
+              Swipe to find your perfect match
+            </p>
+          </div>
     
-          {/* Profile Cards */}
+          {/* Profile Cards Stack */}
           <div className="relative mb-8 animation-delay-200">
-            {currentProfile ? (
-              <ProfileCard
-                profile={currentProfile}
+            {profiles.length > 0 ? (
+              <CardStack
+                profiles={profiles}
                 onSwipe={handleSwipe}
                 loading={swipeLoading}
               />
-            ) : (
+            ) : !loading ? (
               <div className="bg-card border-brutal mt-20 border-border shadow-brutal-lg p-12 text-center animate-fade-in-up">
                 <Users size={80} className="mx-auto mb-4 text-muted-foreground" />
                 <h2 className="text-2xl font-black text-foreground mb-4">No More Profiles!</h2>
@@ -125,8 +130,28 @@ export default function Discover() {
                   REFRESH
                 </Button>
               </div>
-            )}
+            ) : null}
           </div>
+
+          {/* Action Buttons */}
+          {profiles.length > 0 && (
+            <div className="flex justify-center gap-6 animate-fade-in-up animation-delay-300">
+              <Button
+                onClick={() => handleSwipe(SwipeAction.PASS)}
+                disabled={swipeLoading}
+                className="w-16 h-16 rounded-full bg-card hover:bg-destructive/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
+              >
+                <X size={32} className="text-destructive" />
+              </Button>
+              <Button
+                onClick={() => handleSwipe(SwipeAction.LIKE)}
+                disabled={swipeLoading}
+                className="w-16 h-16 rounded-full bg-card hover:bg-success/10 border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200"
+              >
+                <Heart size={32} className="text-success" />
+              </Button>
+            </div>
+          )}
 
        
         </div>

@@ -92,6 +92,7 @@ export interface SetupProfileRequest {
 }
 
 export interface UpdateProfileRequest {
+  name?: string;
   age?: number;
   gender?: Gender;
   bio?: string;
@@ -101,7 +102,7 @@ export interface UpdateProfileRequest {
   minAge?: number;
   maxAge?: number;
   interestedInGender?: Gender | Gender[];
-  profilePictureUrl: string;
+  profilePictureUrl?: string;
 }
 
 export enum SwipeAction {

@@ -15,6 +15,8 @@ export default function Matches() {
   const router = useRouter();
   const [matches, setMatches] = useState<MatchUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUnmatchConfirm, setShowUnmatchConfirm] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<MatchUser | null>(null);
 
   useEffect(() => {
     loadMatches();
@@ -38,17 +40,29 @@ export default function Matches() {
     router.push(`/messages?match=${matchId}`);
   };
 
-  const handleUnmatch = async (matchId: string) => {
+  const handleUnmatchClick = (matchId: string) => {
+    const match = matches.find(m => m.id === matchId);
+    if (match) {
+      setSelectedMatch(match);
+      setShowUnmatchConfirm(true);
+    }
+  };
+
+  const handleUnmatch = async () => {
+    if (!selectedMatch) return;
+    
     try {
-      await matchesApi.unmatch(matchId);
-      setMatches(matches.filter(match => match.id !== matchId));
+      await matchesApi.unmatch(selectedMatch.id);
+      setMatches(matches.filter(match => match.id !== selectedMatch.id));
       toast.success('Successfully unmatched');
+      setShowUnmatchConfirm(false);
+      setSelectedMatch(null);
     } catch (error) {
       console.error('Failed to unmatch:', error);
       toast.error('Failed to unmatch');
     }
   };
-
+  
   if (loading) {
     return (
       <ProtectedRoute requireCompleteProfile={true}>
@@ -68,7 +82,15 @@ export default function Matches() {
     <ProtectedRoute requireCompleteProfile={true}>
       <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 p-4 pb-24 md:pb-4">
         <div className="max-w-6xl mx-auto">
-          
+          {/* Header */}
+          <div className="mb-6 md:mb-8 animate-fade-in-up">
+            <h1 className="text-3xl md:text-4xl font-black text-foreground bg-secondary px-4 py-3 border-brutal border-border shadow-brutal inline-block transform rotate-1">
+              💖 MATCHES
+            </h1>
+            <p className="text-sm md:text-base text-muted-foreground font-medium mt-3 ml-1">
+              {matches.length} {matches.length === 1 ? 'match' : 'matches'} found
+            </p>
+          </div>
 
           {/* Matches Grid */}
           {matches.length > 0 ? (
@@ -84,7 +106,7 @@ export default function Matches() {
                   <MatchCard
                     match={match}
                     onMessage={handleMessage}
-                    onUnmatch={handleUnmatch}
+                    onUnmatch={handleUnmatchClick}
                   />
                 </div>
               ))}
@@ -108,6 +130,36 @@ export default function Matches() {
             </div>
           )}
         </div>
+
+        {/* Unmatch Confirmation Modal */}
+        {showUnmatchConfirm && selectedMatch && (
+          <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-card border-brutal border-border shadow-brutal-lg p-6 max-w-sm w-full animate-fade-in-up">
+              <h3 className="text-xl font-black text-foreground mb-4">Unmatch {selectedMatch.name}?</h3>
+              <p className="text-foreground/80 font-medium mb-6">
+                This action cannot be undone. You won't be able to message each other anymore.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    setShowUnmatchConfirm(false);
+                    setSelectedMatch(null);
+                  }}
+                  variant="outline"
+                  className="flex-1 border-2 border-border font-bold"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleUnmatch}
+                  className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground border-2 border-border shadow-brutal-sm font-bold"
+                >
+                  Unmatch
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   );

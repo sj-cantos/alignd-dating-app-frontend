@@ -84,20 +84,33 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   };
 
   // Mouse events
-  const handleMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX, e.clientY);
-  const handleMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX, e.clientY);
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleDragStart(e.clientX, e.clientY);
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      e.preventDefault();
+      handleDragMove(e.clientX, e.clientY);
+    }
+  };
   const handleMouseUp = () => handleDragEnd();
 
   // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
     const touch = e.touches[0];
     handleDragStart(touch.clientX, touch.clientY);
   };
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
     const touch = e.touches[0];
     handleDragMove(touch.clientX, touch.clientY);
   };
-  const handleTouchEnd = () => handleDragEnd();
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    handleDragEnd();
+  };
 
   // Visuals
   const rotation = isDragging ? dragOffset.x / 20 : 0;
@@ -106,29 +119,29 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   const nopeOpacity = Math.max(0, Math.min(1, -dragOffset.x / 100));
 
   return (
-    <Card className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none rounded-lg relative">
-  <div
-    ref={cardRef}
-    className={`absolute top-0 left-0 right-0 h-96 bg-muted ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} touch-none overflow-hidden`}
-    style={{
-      transform: preview 
-        ? 'translateX(0) translateY(0) rotate(0deg)'
-        : isDragging
-        ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`
-        : 'translateX(0) translateY(0) rotate(0deg)',
-      transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-      opacity: preview ? 1 : opacity,
-    }}
-    {...(!preview && {
-      onMouseDown: handleMouseDown,
-      onMouseMove: handleMouseMove,
-      onMouseUp: handleMouseUp,
-      onMouseLeave: handleMouseUp,
-      onTouchStart: handleTouchStart,
-      onTouchMove: handleTouchMove,
-      onTouchEnd: handleTouchEnd,
-    })}
-  >
+    <Card 
+      ref={cardRef}
+      className={`w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg overflow-hidden animate-fade-in-up select-none rounded-lg relative ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing touch-none'}`}
+      style={{
+        transform: preview 
+          ? 'translateX(0px) translateY(0px) rotate(0deg)'
+          : isDragging || dragOffset.x !== 0 || dragOffset.y !== 0
+          ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`
+          : 'translateX(0px) translateY(0px) rotate(0deg)',
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        opacity: preview ? 1 : opacity,
+      }}
+      {...(!preview && {
+        onMouseDown: handleMouseDown,
+        onMouseMove: handleMouseMove,
+        onMouseUp: handleMouseUp,
+        onMouseLeave: handleMouseUp,
+        onTouchStart: handleTouchStart,
+        onTouchMove: handleTouchMove,
+        onTouchEnd: handleTouchEnd,
+      })}
+    >
+  <div className="absolute top-0 left-0 right-0 h-96 bg-muted overflow-hidden pointer-events-none">
     {/* Profile Image */}
     {!imageError && profile.profilePictureUrl ? (
       <img
@@ -139,6 +152,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
         }`}
         onLoad={() => setImageLoaded(true)}
         onError={() => setImageError(true)}
+        draggable={false}
       />
     ) : (
       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-bright/20 to-primary/20">
@@ -180,7 +194,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
   </div>
 
   {/* Card Content */}
-  <CardContent className="p-6 mt-96">
+  <CardContent className="p-6 mt-86">
     <div className="space-y-4">
       {/* Name and Age */}
       <div className="flex items-center justify-between">

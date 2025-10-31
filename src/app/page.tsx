@@ -48,13 +48,13 @@ return (
               </div>
               <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Alignd</h1>
             </div>
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-2 md:gap-3 items-center">
               <ThemeToggle />
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => router.push('/auth')}
-                className="border-2 border-foreground shadow-brutal-sm hover:shadow-brutal hover:-translate-x-1 hover:-translate-y-1 transition-all duration-300 bg-background"
+                className="border-2 border-foreground shadow-brutal-sm hover:shadow-brutal hover:-translate-x-1 hover:-translate-y-1 transition-all duration-300 bg-background px-2 sm:px-3 text-xs sm:text-sm"
               >
                 Login
               </Button>
@@ -62,7 +62,7 @@ return (
                 variant="default" 
                 size="sm" 
                 onClick={() => router.push('/auth')}
-                className="border-2 border-foreground shadow-brutal-sm hover:shadow-brutal hover:-translate-x-1 hover:-translate-y-1 transition-all duration-300 bg-primary text-background"
+                className="border-2 border-foreground shadow-brutal-sm hover:shadow-brutal hover:-translate-x-1 hover:-translate-y-1 transition-all duration-300 bg-primary text-background px-2 sm:px-3 text-xs sm:text-sm"
               >
                 Sign Up
               </Button>
@@ -126,7 +126,7 @@ return (
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 animate-fade-in-up">
             <h3 className="text-4xl md:text-5xl font-display font-bold mb-4">
-              Why Choose <span className="text-primary transition-colors duration-300 hover:text-secondary">Charm'd</span>
+              Why Choose <span className="text-primary transition-colors duration-300 hover:text-secondary">Alignd</span>
             </h3>
             <p className="text-xl text-muted-foreground font-semibold max-w-2xl mx-auto">
               We&apos;re not just another dating app. We&apos;re here to help you find genuine connections.

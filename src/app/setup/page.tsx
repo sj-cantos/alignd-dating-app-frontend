@@ -19,7 +19,7 @@ export default function ProfileSetup() {
 
   // Profile form state
   const [formData, setFormData] = useState({
-    age: 25,
+    age: 25 as number | '',
     gender: Gender.MALE,
     bio: '',
     interests: [] as string[],
@@ -73,8 +73,8 @@ export default function ProfileSetup() {
           // Use default location (you can set your city's coordinates)
           setFormData(prev => ({
             ...prev,
-            latitude: 40.7128, // New York default
-            longitude: -74.0060,
+            latitude: 0, // New York default
+            longitude: 0,
           }));
         }
       );
@@ -172,7 +172,8 @@ export default function ProfileSetup() {
     }
 
     // Validate age
-    if (!formData.age || formData.age < 18 || formData.age > 100) {
+    const ageValue = typeof formData.age === 'string' ? parseInt(formData.age) : formData.age;
+    if (!ageValue || isNaN(ageValue) || ageValue < 18 || ageValue > 100) {
       toast.error('Please enter a valid age between 18 and 100');
       return;
     }
@@ -183,7 +184,14 @@ export default function ProfileSetup() {
       console.log('Submitting profile data:', formData);
       console.log('Current user:', user);
       console.log('Token:', document.cookie);
-      await setupProfile(formData);
+      
+      // Ensure age is a number for submission
+      const submissionData = {
+        ...formData,
+        age: ageValue
+      };
+      
+      await setupProfile(submissionData);
       toast.success('Profile setup completed!');
     } catch (error: unknown) {
       console.error('Profile setup error:', error);
@@ -225,9 +233,13 @@ export default function ProfileSetup() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
   <div className="w-full max-w-2xl">
     {/* Header */}
-    <div className="flex flex-col sm:flex-row items-center justify-center mb-8 gap-4">
-      <Heart className="w-14 h-14 text-primary fill-primary" />
-      <h1 className="text-3xl sm:text-4xl font-bold text-center sm:text-left">Complete Your Profile</h1>
+    <div className="mb-6 md:mb-8 text-center animate-fade-in-up">
+      <h1 className="text-3xl md:text-4xl font-black text-foreground bg-pink-bright px-4 py-3 border-brutal border-border shadow-brutal inline-block transform -rotate-1">
+        💖 SETUP PROFILE
+      </h1>
+      <p className="text-sm md:text-base text-muted-foreground font-medium mt-3">
+        Complete your profile to start matching
+      </p>
     </div>
 
     <Card className="rounded-lg shadow-brutal-lg overflow-hidden">
@@ -250,27 +262,46 @@ export default function ProfileSetup() {
                   <Label htmlFor="age">Age</Label>
                   <Input
                     id="age"
-                    type="number"
-                    min="18"
-                    max="100"
-                    value={formData.age}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={formData.age === '' ? '' : formData.age.toString()}
                     className="w-full"
+                    placeholder="Enter your age"
                     onChange={(e) => {
                       const value = e.target.value;
+                      // Allow empty field
                       if (value === '') {
-                        // Allow empty field temporarily while user is typing
                         setFormData(prev => ({ ...prev, age: '' as any }));
-                      } else {
-                        const numValue = parseInt(value);
-                        if (!isNaN(numValue) && numValue >= 18 && numValue <= 100) {
-                          setFormData(prev => ({ ...prev, age: numValue }));
-                        }
+                        return;
+                      }
+                      
+                      // Only allow numeric characters
+                      const numericValue = value.replace(/\D/g, '');
+                      if (numericValue !== value) {
+                        return; // Reject non-numeric input
+                      }
+                      
+                      // Parse and set the numeric value
+                      const numValue = parseInt(numericValue);
+                      if (!isNaN(numValue)) {
+                        setFormData(prev => ({ ...prev, age: numValue }));
                       }
                     }}
                     onBlur={(e) => {
-                      // If field is empty on blur, set to minimum age
-                      if (e.target.value === '' || isNaN(parseInt(e.target.value))) {
+                      // Validate and correct range only on blur
+                      const value = e.target.value;
+                      if (value === '' || isNaN(parseInt(value))) {
                         setFormData(prev => ({ ...prev, age: 18 }));
+                      } else {
+                        const numValue = parseInt(value);
+                        if (numValue < 18) {
+                          setFormData(prev => ({ ...prev, age: 18 }));
+                          toast.info('Minimum age is 18');
+                        } else if (numValue > 100) {
+                          setFormData(prev => ({ ...prev, age: 100 }));
+                          toast.info('Maximum age is 100');
+                        }
                       }
                     }}
                   />
@@ -472,7 +503,7 @@ export default function ProfileSetup() {
                     {locationPermission === 'granted'
                       ? 'Location detected automatically'
                       : locationPermission === 'denied'
-                        ? 'Using default location (New York)'
+                        ? 'Location permission denied'
                         : 'Detecting location...'}
                   </span>
                 </div>
@@ -481,16 +512,78 @@ export default function ProfileSetup() {
                 </p>
               </div>
 
-              <div className="bg-muted p-4 rounded-lg max-h-48 overflow-y-auto">
-                <h4 className="font-semibold mb-2">Profile Summary</h4>
-                <div className="space-y-1 text-sm">
-                  <p><strong>Age:</strong> {formData.age}</p>
-                  <p><strong>Gender:</strong> {formData.gender}</p>
-                  <p><strong>Interests:</strong> {formData.interests.join(', ')}</p>
-                  <p><strong>Looking for:</strong> {
-                    formData.interestedInGender.length === 3 ? 'Everyone' : formData.interestedInGender.join(', ')
-                  }</p>
-                  <p><strong>Age preference:</strong> {formData.minAge} - {formData.maxAge}</p>
+              {/* Profile Summary Card */}
+              <div className="bg-card border-brutal border-border shadow-brutal-lg p-6 space-y-6 animate-fade-in-up">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-black text-xl text-foreground">Profile Preview</h4>
+                  <Heart className="w-6 h-6 text-primary fill-primary" />
+                </div>
+
+                {/* Profile Photo & Name */}
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-lg border-brutal border-border shadow-brutal-sm bg-gradient-to-br from-pink-bright/20 to-primary/20 overflow-hidden">
+                    {(previewUrl || formData.profilePictureUrl) ? (
+                      <img 
+                        src={previewUrl || formData.profilePictureUrl} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Camera className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-foreground">{user?.name || 'Your Name'}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm font-bold bg-secondary px-2 py-1 border-2 border-border transform -rotate-2">
+                        {formData.age}
+                      </span>
+                      <span className="text-sm font-bold text-muted-foreground uppercase">
+                        {formData.gender}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bio */}
+                {formData.bio && (
+                  <div className="bg-muted/50 p-4 border-l-brutal border-primary">
+                    <p className="text-foreground/80 font-medium italic">"{formData.bio}"</p>
+                  </div>
+                )}
+
+                {/* Interests */}
+                {formData.interests.length > 0 && (
+                  <div className="space-y-2">
+                    <h5 className="font-black text-foreground text-sm uppercase tracking-wide">Interests</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.interests.slice(0, 6).map((interest, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-accent/20 border-2 border-border text-foreground font-bold text-xs uppercase rounded-sm transform transition-transform"
+                          style={{ transform: `rotate(${(index % 2 === 0 ? 1 : -1) * 2}deg)` }}
+                        >
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preferences */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-blue-bright/10 border-2 border-border p-3 shadow-brutal-sm">
+                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Looking for</p>
+                    <p className="font-black text-foreground">
+                      {formData.interestedInGender.length === 3 ? 'Everyone' : formData.interestedInGender.join(', ')}
+                    </p>
+                  </div>
+                  <div className="bg-pink-bright/10 border-2 border-border p-3 shadow-brutal-sm">
+                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Age Range</p>
+                    <p className="font-black text-foreground">{formData.minAge} - {formData.maxAge}</p>
+                  </div>
                 </div>
               </div>
 

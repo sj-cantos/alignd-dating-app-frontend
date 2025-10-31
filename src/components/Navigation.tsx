@@ -56,7 +56,7 @@ export function Navigation() {
   return (
     <>
       {/* Desktop Navigation - Top */}
-      <nav className="hidden md:block bg-pink-500 border-b-brutal border-border shadow-brutal sticky top-0 z-40">
+      <nav className="mt-4 hidden md:block bg-pink-500 border-b-brutal border-border shadow-brutal sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -64,7 +64,7 @@ export function Navigation() {
               className="flex items-center cursor-pointer transform hover:rotate-0 transition-transform duration-200"
               onClick={() => router.push('/discover')}
             >
-              <div className="bg-gradient-to-r from-primary to-pink-bright text-primary-foreground px-4 py-2 border-brutal border-border shadow-brutal-sm font-black text-xl">
+              <div className="bg-gradient-to-r from-primary to-pink-bright text-white px-4 py-2 border-brutal border-border shadow-brutal-sm font-black text-xl">
                 💘 ALIGND
               </div>
             </div>
@@ -82,7 +82,7 @@ export function Navigation() {
                       shadow-brutal-sm hover:shadow-brutal
                       transition-all duration-200 transform hover:scale-105
                       ${isActive 
-                        ? `bg-gradient-to-r ${item.color} text-card` 
+                        ? 'bg-primary text-primary-foreground' 
                         : 'bg-card text-foreground hover:bg-muted'
                       }
                     `}
