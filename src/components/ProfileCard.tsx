@@ -198,7 +198,7 @@ export function ProfileCard({ profile, onSwipe, loading = false, preview = false
       )}
 
       {/* Distance */}
-      {typeof profile.distance === 'number' && (
+      {typeof profile.distance === 'number' && !isNaN(profile.distance) && (
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin size={16} className="text-destructive" />
           <span className="font-medium">{Math.round(profile.distance)} km away</span>

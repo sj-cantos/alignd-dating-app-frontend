@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
@@ -97,6 +97,16 @@ function MessagesContent() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [showChat, setShowChat] = useState(false); // For mobile navigation
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const loadMessages = useCallback(async (targetUserId: string) => {
     try {
@@ -268,15 +278,15 @@ function MessagesContent() {
  
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
           {/* Conversations Sidebar */}
           <div className={`lg:col-span-1 ${showChat ? 'hidden lg:block' : 'block'}`}>
-            <div className="bg-card border-brutal border-border shadow-brutal h-full overflow-hidden">
-              <div className="bg-primary border-b-brutal border-border p-4">
+            <div className="bg-card border-brutal border-border shadow-brutal h-full overflow-hidden flex flex-col">
+              <div className="bg-primary border-b-brutal border-border p-4 flex-shrink-0">
                 <h2 className="font-black text-primary-foreground text-lg">CONVERSATIONS</h2>
               </div>
               
-              <div className="overflow-y-auto h-full">
+              <div className="overflow-y-auto flex-1">
                   {conversations.length > 0 ? (
                     conversations.map((conversation) => (
                       <button
@@ -340,7 +350,7 @@ function MessagesContent() {
                 {selectedConversation ? (
                   <>
                     {/* Chat Header */}
-                    <div className="bg-accent border-b-brutal border-border p-4">
+                    <div className="bg-accent border-b-brutal border-border p-4 flex-shrink-0">
                       <div className="flex items-center gap-3">
                         {/* Back button for mobile */}
                         <button
@@ -374,7 +384,7 @@ function MessagesContent() {
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                       {messages.map((message) => (
                         <div
                           key={message.id}
@@ -396,10 +406,12 @@ function MessagesContent() {
                           </div>
                         </div>
                       ))}
+                      {/* Invisible div to scroll to */}
+                      <div ref={messagesEndRef} />
                     </div>
 
                     {/* Message Input */}
-                    <div className="border-t-brutal border-border p-4">
+                    <div className="border-t-brutal border-border p-4 flex-shrink-0">
                       <div className="flex gap-2">
                         <Input
                           value={newMessage}

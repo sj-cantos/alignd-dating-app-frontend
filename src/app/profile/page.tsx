@@ -50,9 +50,9 @@ export default function Profile() {
         profilePictureUrl: user.profilePictureUrl || '',
         minAge: user.preferences?.ageRange?.min || 18,
         maxAge: user.preferences?.ageRange?.max || 50,
-        interestedInGender: Array.isArray(user.preferences?.interestedInGender) 
-          ? user.preferences.interestedInGender 
-          : user.preferences?.interestedInGender 
+        interestedInGender: Array.isArray(user.preferences?.interestedInGender)
+          ? user.preferences.interestedInGender
+          : user.preferences?.interestedInGender
             ? [user.preferences.interestedInGender]
             : [Gender.FEMALE],
       });
@@ -67,6 +67,12 @@ export default function Profile() {
 
     if (!formData.bio.trim()) {
       toast.error('Bio is required');
+      return;
+    }
+
+    // Validate age
+    if (!formData.age || formData.age < 18 || formData.age > 100) {
+      toast.error('Please enter a valid age between 18 and 100');
       return;
     }
 
@@ -169,206 +175,203 @@ export default function Profile() {
     bio: formData.bio || 'Your bio will appear here...',
     interests: formData.interests,
     profilePictureUrl: formData.profilePictureUrl,
-    location: user?.location || { latitude: 0, longitude: 0 },
+    location: user?.location || { latitude: 40.7128, longitude: -74.0060 },
     distance: undefined, // Not shown in preview
   });
 
   return (
     <ProtectedRoute requireCompleteProfile={true}>
-      <div className="min-h-screen bg-background p-4 pb-24 md:pb-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header with navigation and edit button */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-           
-              {!isEditing ? (
+      <div className="min-h-screen bg-background p-4 pb-24 md:pb-8">
+        <div className="max-w-5xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h1 className="text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
+              <User size={26} /> Profile Settings
+            </h1>
+
+            {!isEditing ? (
+              <Button
+                onClick={() => setIsEditing(true)}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg font-black px-5 py-2"
+              >
+                <Edit3 size={20} className="mr-2" /> EDIT PROFILE
+              </Button>
+            ) : (
+              <div className="flex gap-3">
                 <Button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black"
+                  onClick={() => setIsEditing(false)}
+                  variant="outline"
+                  className="bg-card border-brutal border-border shadow-brutal hover:shadow-brutal-lg font-bold px-5 py-2"
+                  disabled={saving}
                 >
-                  <Edit3 size={20} className="mr-2" />
-                  EDIT PROFILE
+                  Cancel
                 </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => setIsEditing(false)}
-                    variant="outline"
-                    className="bg-card border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-bold"
-                    disabled={saving}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="bg-success hover:bg-success/90 text-success-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black"
-                  >
-                    <Save size={20} className="mr-2" />
-                    {saving ? 'SAVING...' : 'SAVE'}
-                  </Button>
-                </div>
-              )}
-            </div>
-            
-            
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="bg-success hover:bg-success/90 text-success-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg font-black px-5 py-2"
+                >
+                  <Save size={20} className="mr-2" />
+                  {saving ? 'SAVING...' : 'SAVE'}
+                </Button>
+              </div>
+            )}
           </div>
 
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Profile Preview Card */}
-            <div className="animate-fade-in-up">
-              <h2 className="text-2xl font-black text-foreground mb-4 flex items-center gap-2">
-                <User size={24} />
-                Profile Preview
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Profile Preview */}
+            <div className="animate-fade-in-up space-y-4">
+              <h2 className="text-2xl font-black text-foreground flex items-center gap-2">
+                <User size={22} /> Profile Preview
               </h2>
-              <p className="text-muted-foreground font-medium mb-6">
-                This is how other users will see your profile
+              <p className="text-muted-foreground font-medium">
+                This is how others will see your profile
               </p>
-              <ProfileCard
-                profile={getPreviewProfile()}
-                onSwipe={() => {}} // No-op for preview
-                preview={true}
-              />
+              <ProfileCard profile={getPreviewProfile()} onSwipe={() => { }} preview />
             </div>
 
             {/* Edit Form */}
-            <Card className="bg-card border-brutal border-border shadow-brutal-lg animate-fade-in-up">
-              <CardHeader className="bg-gradient-to-r from-success to-accent border-b-brutal border-border">
+            <Card className="bg-card border-brutal border-border shadow-brutal-lg animate-fade-in-up overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary to-accent border-b-brutal border-border">
                 <CardTitle className="text-primary-foreground font-black text-xl flex items-center gap-2">
-                  <Edit3 size={24} />
-                  {isEditing ? 'Edit Profile' : 'Profile Details'}
+                  <Edit3 size={22} /> {isEditing ? 'Edit Profile' : 'Profile Details'}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-6 max-h-[600px] overflow-y-auto">
-                {/* Basic Information */}
-                <div className="space-y-4">
-                  <h3 className="font-black text-foreground text-lg border-b-2 border-border pb-2">
+
+              <CardContent className="p-6 space-y-8 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                {/* BASIC INFO */}
+                <section className="space-y-5">
+                  <h3 className="font-black text-foreground text-lg flex items-center gap-2 border-b-2 border-border pb-2">
                     📝 BASIC INFO
                   </h3>
-                  
-                  <div>
-                    <Label htmlFor="name" className="font-bold text-foreground">Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      disabled={!isEditing}
-                      className="border-brutal border-border font-medium bg-background shadow-brutal-sm focus:shadow-brutal transition-all duration-200"
-                    />
+
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <Label htmlFor="name" className="font-bold text-foreground">Name</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                        disabled={!isEditing}
+                        className="border-brutal border-border font-medium bg-background shadow-brutal-sm focus:shadow-brutal"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="age" className="font-bold text-foreground">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        min="18"
+                        max="100"
+                        value={formData.age}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '') {
+                            setFormData((p) => ({ ...p, age: '' as any }));
+                          } else {
+                            const n = parseInt(value);
+                            if (!isNaN(n) && n >= 18 && n <= 100) {
+                              setFormData((p) => ({ ...p, age: n }));
+                            }
+                          }
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value === '') {
+                            setFormData((p) => ({ ...p, age: user?.age || 18 }));
+                          }
+                        }}
+                        disabled={!isEditing}
+                        className="border-brutal border-border font-medium bg-background shadow-brutal-sm focus:shadow-brutal"
+                      />
+                    </div>
                   </div>
 
+                  {/* Gender */}
                   <div>
-                    <Label htmlFor="age" className="font-bold text-foreground">Age: {formData.age}</Label>
-                    <Slider
-                      value={[formData.age]}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, age: value[0] }))}
-                      min={18}
-                      max={100}
-                      step={1}
-                      disabled={!isEditing}
-                      className="mt-2"
-                    />
+                    <Label className="font-bold text-foreground mb-2 block">Gender</Label>
+                    <div className="flex flex-wrap gap-3">
+                      {Object.values(Gender).map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          disabled={!isEditing}
+                          onClick={() => setFormData((p) => ({ ...p, gender: g as Gender }))}
+                          className={`px-4 py-2 rounded-xl border-2 border-border font-bold transition-all duration-150 ${formData.gender === g
+                              ? 'bg-primary text-primary-foreground shadow-brutal'
+                              : 'bg-background text-foreground hover:bg-muted'
+                            } ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div>
-                    <Label className="font-bold text-foreground">Gender</Label>
-                    <RadioGroup
-                      value={formData.gender}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value as Gender }))}
-                      disabled={!isEditing}
-                      className="mt-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value={Gender.MALE} id="male" />
-                        <Label htmlFor="male">Male</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value={Gender.FEMALE} id="female" />
-                        <Label htmlFor="female">Female</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value={Gender.NON_BINARY} id="non-binary" />
-                        <Label htmlFor="non-binary">Non-binary</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
+                  {/* Bio */}
                   <div>
                     <Label htmlFor="bio" className="font-bold text-foreground">Bio</Label>
                     <textarea
                       id="bio"
                       value={formData.bio}
-                      onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                      onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border-brutal border-border bg-background text-foreground focus:outline-none focus:shadow-brutal resize-none font-medium transition-all duration-200"
+                      className="w-full px-3 py-2 border-brutal border-border bg-background text-foreground focus:outline-none focus:shadow-brutal resize-none font-medium"
                       rows={3}
                       placeholder="Tell everyone about yourself..."
                     />
                   </div>
 
+                  {/* Profile Picture */}
                   <div>
                     <Label className="font-bold text-foreground">Profile Picture</Label>
-                    <div className="mt-2 space-y-3">
+                    <div className="mt-3 space-y-3">
                       <Input
                         type="file"
                         accept="image/*"
                         onChange={onFileChange}
                         disabled={!isEditing || uploadingImage}
-                        className="border-brutal border-border font-medium bg-background shadow-brutal-sm focus:shadow-brutal transition-all duration-200 file:border-0 file:bg-secondary file:text-secondary-foreground"
+                        className="border-brutal border-border font-medium bg-background shadow-brutal-sm focus:shadow-brutal file:border-0 file:bg-primary file:text-primary-foreground"
                       />
 
                       {selectedFile && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-16 h-16 border-brutal border-border shadow-brutal overflow-hidden">
-                            <img
-                              alt="preview"
-                              src={URL.createObjectURL(selectedFile)}
-                              className="w-full h-full object-cover"
-                            />
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-lg border-brutal border-border shadow-brutal overflow-hidden">
+                            <img src={URL.createObjectURL(selectedFile)} alt="preview" className="w-full h-full object-cover" />
                           </div>
                           <Button
                             type="button"
                             onClick={uploadProfileImage}
                             disabled={uploadingImage}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground border-brutal border-border shadow-brutal-sm hover:shadow-brutal font-bold"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground border-brutal border-border font-bold shadow-brutal-sm"
                           >
                             {uploadingImage ? 'Uploading...' : 'Upload Photo'}
                           </Button>
                         </div>
                       )}
-
-                      {uploadError && (
-                        <p className="text-destructive text-sm font-bold">{uploadError}</p>
-                      )}
-
-                      {formData.profilePictureUrl && (
-                        <p className="text-sm text-muted-foreground break-all">
-                          Current: {formData.profilePictureUrl}
-                        </p>
-                      )}
                     </div>
                   </div>
-                </div>
+                </section>
 
-                {/* Interests */}
-                <div className="space-y-4">
+                {/* INTERESTS */}
+                <section className="space-y-4">
                   <h3 className="font-black text-foreground text-lg border-b-2 border-border pb-2">
                     🎯 INTERESTS
                   </h3>
-                  
+
                   {isEditing && (
                     <div className="flex gap-2">
                       <Input
                         value={currentInterest}
                         onChange={(e) => setCurrentInterest(e.target.value)}
                         placeholder="Add an interest..."
-                        className="border-brutal border-border font-medium bg-background shadow-brutal-sm focus:shadow-brutal transition-all duration-200"
+                        className="border-brutal border-border font-medium bg-background shadow-brutal-sm focus:shadow-brutal"
                         onKeyPress={(e) => e.key === 'Enter' && addInterest()}
                       />
                       <Button
                         onClick={addInterest}
-                        className="bg-success hover:bg-success/90 text-success-foreground border-brutal border-border font-bold shadow-brutal-sm hover:shadow-brutal transition-all duration-200"
+                        className="bg-success hover:bg-success/90 text-success-foreground border-brutal border-border font-bold shadow-brutal-sm"
                       >
                         Add
                       </Button>
@@ -376,10 +379,10 @@ export default function Profile() {
                   )}
 
                   <div className="flex flex-wrap gap-2">
-                    {formData.interests.map((interest, index) => (
+                    {formData.interests.map((interest, i) => (
                       <span
-                        key={index}
-                        className="px-3 py-1 bg-accent border-2 border-border text-accent-foreground font-bold text-sm flex items-center gap-2 transform rotate-1"
+                        key={i}
+                        className="px-3 py-1 bg-accent border-2 border-border text-accent-foreground font-bold text-sm rounded-lg flex items-center gap-2"
                       >
                         {interest}
                         {isEditing && (
@@ -393,70 +396,64 @@ export default function Profile() {
                       </span>
                     ))}
                   </div>
-                </div>
+                </section>
 
-                {/* Preferences */}
-                <div className="space-y-4">
+                {/* PREFERENCES */}
+                <section className="space-y-5">
                   <h3 className="font-black text-foreground text-lg border-b-2 border-border pb-2">
                     💖 PREFERENCES
                   </h3>
-                  
+
                   <div>
-                    <Label className="font-bold text-foreground">Age Range: {formData.minAge} - {formData.maxAge}</Label>
-                    <div className="mt-2 space-y-2">
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Min Age: {formData.minAge}</Label>
-                        <Slider
-                          value={[formData.minAge]}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, minAge: value[0] }))}
-                          min={18}
-                          max={formData.maxAge}
-                          step={1}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Max Age: {formData.maxAge}</Label>
-                        <Slider
-                          value={[formData.maxAge]}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, maxAge: value[0] }))}
-                          min={formData.minAge}
-                          max={100}
-                          step={1}
-                          disabled={!isEditing}
-                        />
-                      </div>
+                    <Label className="font-bold text-foreground">
+                      Age Range: {formData.minAge} - {formData.maxAge}
+                    </Label>
+                    <div className="mt-2 space-y-3">
+                      <Slider
+                        value={[formData.minAge]}
+                        onValueChange={(v) => setFormData((p) => ({ ...p, minAge: v[0] }))}
+                        min={18}
+                        max={formData.maxAge}
+                        step={1}
+                        disabled={!isEditing}
+                      />
+                      <Slider
+                        value={[formData.maxAge]}
+                        onValueChange={(v) => setFormData((p) => ({ ...p, maxAge: v[0] }))}
+                        min={formData.minAge}
+                        max={100}
+                        step={1}
+                        disabled={!isEditing}
+                      />
                     </div>
                   </div>
 
                   <div>
                     <Label className="font-bold text-foreground">Interested in</Label>
-                    <div className="mt-2 space-y-2">
-                      {Object.values(Gender).map((gender) => (
-                        <div key={gender} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`interested-${gender}`}
-                            checked={formData.interestedInGender.includes(gender)}
-                            onChange={() => isEditing && handleGenderInterestChange(gender)}
-                            disabled={!isEditing}
-                            className="w-4 h-4"
-                          />
-                          <Label htmlFor={`interested-${gender}`} className="capitalize text-foreground">
-                            {gender}
-                          </Label>
-                        </div>
+                    <div className="mt-3 flex flex-wrap gap-3">
+                      {Object.values(Gender).map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          disabled={!isEditing}
+                          onClick={() => handleGenderInterestChange(g)}
+                          className={`px-4 py-2 rounded-xl border-2 border-border font-bold transition-all duration-150 ${formData.interestedInGender.includes(g)
+                              ? 'bg-success text-success-foreground shadow-brutal'
+                              : 'bg-background text-foreground hover:bg-muted'
+                            } ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        >
+                          {g}
+                        </button>
                       ))}
                     </div>
                   </div>
-                </div>
-
-                {/* Save Button - Remove from here since it's now in header */}
+                </section>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
     </ProtectedRoute>
   );
 }

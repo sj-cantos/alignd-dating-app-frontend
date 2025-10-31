@@ -76,7 +76,7 @@ export function MatchCard({ match, onMessage, onUnmatch }: MatchCardProps) {
           )}
 
           {/* Distance */}
-          {match.distance && (
+          {typeof match.distance === 'number' && !isNaN(match.distance) && (
             <p className="text-xs font-bold text-muted-foreground">
               {Math.round(match.distance)} km away
             </p>

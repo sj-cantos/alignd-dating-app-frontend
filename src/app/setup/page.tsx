@@ -23,8 +23,8 @@ export default function ProfileSetup() {
     gender: Gender.MALE,
     bio: '',
     interests: [] as string[],
-    latitude: 0,
-    longitude: 0,
+    latitude: 40.7128, // Default to NYC coordinates
+    longitude: -74.0060,
     minAge: 18,
     maxAge: 50,
     interestedInGender: [Gender.FEMALE] as Gender[],
@@ -171,6 +171,12 @@ export default function ProfileSetup() {
       return;
     }
 
+    // Validate age
+    if (!formData.age || formData.age < 18 || formData.age > 100) {
+      toast.error('Please enter a valid age between 18 and 100');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -249,7 +255,24 @@ export default function ProfileSetup() {
                     max="100"
                     value={formData.age}
                     className="w-full"
-                    onChange={(e) => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) || 18 }))}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '') {
+                        // Allow empty field temporarily while user is typing
+                        setFormData(prev => ({ ...prev, age: '' as any }));
+                      } else {
+                        const numValue = parseInt(value);
+                        if (!isNaN(numValue) && numValue >= 18 && numValue <= 100) {
+                          setFormData(prev => ({ ...prev, age: numValue }));
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // If field is empty on blur, set to minimum age
+                      if (e.target.value === '' || isNaN(parseInt(e.target.value))) {
+                        setFormData(prev => ({ ...prev, age: 18 }));
+                      }
+                    }}
                   />
                 </div>
 

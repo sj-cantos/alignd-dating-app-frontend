@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -27,13 +28,28 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
     setLoading(true);
     setError('');
 
+    // Show loading toast
+    const loadingToastId = toast.loading('Signing in...', {
+      description: 'Please wait while we authenticate you'
+    });
+
     try {
       console.log('Attempting login...');
       await login({ email, password });
       console.log('Login successful');
+      
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToastId);
+      toast.success('Login successful!', {
+        description: 'Welcome back! Redirecting you now...'
+      });
+      
       // Navigation will be handled by the auth context
     } catch (err: any) {
       console.error('Login error:', err);
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToastId);
 
       let errorMessage = 'Login failed';
 
@@ -47,6 +63,11 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
       console.log('Setting error message:', errorMessage);
       setError(errorMessage);
+      
+      // Show error toast
+      toast.error('Login failed', {
+        description: errorMessage
+      });
     } finally {
       setLoading(false);
     }
