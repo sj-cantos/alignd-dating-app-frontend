@@ -31,12 +31,9 @@ export default function Auth() {
     );
   }
 
-  if (isAuthenticated) {
-    return null;
-  }
 
   return (
-    <div className="min-h-screen bg- flex flex-col items-center justify-center bg-gray-50 p-4 gap-2">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-2">
       <div className="flex items-center gap-2 cursor-pointer group " onClick={() => router.push('/')}>
         <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
           <Heart className="w-6 h-6 fill-background text-background" />

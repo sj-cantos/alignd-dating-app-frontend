@@ -5,9 +5,6 @@ const API_BASE_URL = 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Add token to requests if available
@@ -108,6 +105,48 @@ export interface UpdateProfileRequest {
   profilePictureUrl: string;
 }
 
+export enum SwipeAction {
+  LIKE = 'like',
+  PASS = 'pass',
+}
+
+export enum MatchStatus {
+  PENDING = 'pending',
+  MATCHED = 'matched',
+}
+
+export interface SwipeRequest {
+  targetUserId: string;
+  action: SwipeAction;
+}
+
+export interface SwipeResponse {
+  message: string;
+  isMatch?: boolean;
+  match?: {
+    id: string;
+    userId1: string;
+    userId2: string;
+    status: MatchStatus;
+    matchedAt?: string;
+  };
+}
+
+export interface MatchUser {
+  id: string;
+  name: string;
+  age: number;
+  bio: string;
+  profilePictureUrl?: string;
+  gender: Gender;
+  interests: string[];
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  distance?: number;
+}
+
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', data);
@@ -144,6 +183,37 @@ export const profileApi = {
 
   getProfile: async (): Promise<{ user: User }> => {
     const response = await api.get('/users/profile');
+    return response.data;
+  },
+
+  uploadProfilePhoto: async (file: File): Promise<{ message: string; url: string; user: User }> => {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await api.post('/users/profile/photo', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+};
+
+export const matchesApi = {
+  getPotentialMatches: async (limit: number = 10): Promise<MatchUser[]> => {
+    const response = await api.get('/matches/cards');
+    return response.data;
+  },
+
+  swipe: async (data: SwipeRequest): Promise<SwipeResponse> => {
+    const response = await api.post('/matches/swipe', data);
+    return response.data;
+  },
+
+  getMatches: async (): Promise<MatchUser[]> => {
+    const response = await api.get('/matches');
+    return response.data;
+  },
+
+  unmatch: async (targetUserId: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/matches/${targetUserId}`);
     return response.data;
   },
 };

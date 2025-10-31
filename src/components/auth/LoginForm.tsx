@@ -18,31 +18,34 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useAuth();
+  const { login, error: authError } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted, preventing default');
     setLoading(true);
     setError('');
 
     try {
+      console.log('Attempting login...');
       await login({ email, password });
+      console.log('Login successful');
       // Navigation will be handled by the auth context
     } catch (err: any) {
       console.error('Login error:', err);
-      
-      // Extract error message from API response
+
       let errorMessage = 'Login failed';
-      
-      if (err?.response?.data?.message) {
+
+      if (err?.response?.status === 401) {
+        errorMessage = 'Invalid email or password';
+      } else if (err?.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err?.message) {
         errorMessage = err.message;
-      } else if (err?.response?.status === 401) {
-        errorMessage = 'Invalid email or password';
       }
-      
+
+      console.log('Setting error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -57,8 +60,16 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-          
+          {(error || authError) && (
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="text-destructive text-sm font-bold bg-destructive/10 border border-destructive rounded p-2"
+            >
+              {error || (authError as string)}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -68,6 +79,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              className="border-brutal border-border bg-background text-foreground shadow-brutal-sm focus:shadow-brutal transition-all duration-200"
             />
           </div>
 
@@ -80,19 +92,24 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
+              className="border-brutal border-border bg-background text-foreground shadow-brutal-sm focus:shadow-brutal transition-all duration-200"
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black"
+            disabled={loading}
+          >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
 
-          <div className="text-center text-sm">
+          <div className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
             <button
               type="button"
               onClick={onToggleMode}
-              className="text-blue-600 hover:underline"
+              className="text-accent hover:text-accent/80 font-bold hover:underline"
               disabled={loading}
             >
               Sign up

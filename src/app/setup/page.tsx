@@ -156,6 +156,7 @@ export default function ProfileSetup() {
       }
     } finally {
       setIsSubmitting(false);
+      router.push('/discover')
     }
   };
 

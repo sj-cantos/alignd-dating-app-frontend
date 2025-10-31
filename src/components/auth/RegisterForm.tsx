@@ -18,7 +18,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { register } = useAuth();
+  const { register, error: authError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +34,9 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
       // Extract error message from API response
       let errorMessage = 'Registration failed';
       
-      if (err && typeof err === 'object' && 'response' in err) {
+      if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err && typeof err === 'object' && 'response' in err) {
         const apiError = err as any;
         if (apiError.response?.data?.message) {
           errorMessage = apiError.response.data.message;
@@ -52,17 +54,21 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Create Account</CardTitle>
+    <Card className="w-full max-w-md bg-card border-brutal border-border shadow-brutal">
+      <CardHeader >
+        <CardTitle >Create Account</CardTitle>
         <CardDescription>Sign up to get started with your account.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+          {(error || authError) && (
+            <div role="alert" aria-live="assertive" className="text-destructive text-sm font-bold bg-destructive/10 border border-destructive rounded p-2">
+              {error || (authError as string)}
+            </div>
+          )}
           
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name" className="font-bold text-foreground">Full Name</Label>
             <Input
               id="name"
               type="text"
@@ -70,11 +76,12 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
               onChange={(e) => setName(e.target.value)}
               required
               disabled={loading}
+              className="border-brutal border-border bg-background text-foreground shadow-brutal-sm focus:shadow-brutal transition-all duration-200"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="font-bold text-foreground">Email</Label>
             <Input
               id="email"
               type="email"
@@ -82,11 +89,12 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              className="border-brutal border-border bg-background text-foreground shadow-brutal-sm focus:shadow-brutal transition-all duration-200"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="font-bold text-foreground">Password</Label>
             <Input
               id="password"
               type="password"
@@ -95,19 +103,24 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
               required
               minLength={6}
               disabled={loading}
+              className="border-brutal border-border bg-background text-foreground shadow-brutal-sm focus:shadow-brutal transition-all duration-200"
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button 
+            type="submit" 
+            className="w-full bg-primary hover:bg-secondary/90 text-secondary-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black" 
+            disabled={loading}
+          >
             {loading ? 'Creating account...' : 'Create Account'}
           </Button>
 
-          <div className="text-center text-sm">
+          <div className="text-center text-sm text-muted-foreground">
             Already have an account?{' '}
             <button
               type="button"
               onClick={onToggleMode}
-              className="text-blue-600 hover:underline"
+              className="text-accent hover:text-accent/80 font-bold hover:underline"
               disabled={loading}
             >
               Sign in
