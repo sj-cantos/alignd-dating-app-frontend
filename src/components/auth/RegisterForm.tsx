@@ -14,6 +14,7 @@ interface RegisterFormProps {
 export function RegisterForm({ onToggleMode }: RegisterFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,6 +25,13 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
 
     try {
       await register({ email, password, name });
@@ -107,10 +115,31 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="font-bold text-foreground">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              disabled={loading}
+              className={`border-brutal border-border bg-background text-foreground shadow-brutal-sm focus:shadow-brutal transition-all duration-200 ${
+                confirmPassword && password !== confirmPassword 
+                  ? 'border-destructive focus:border-destructive' 
+                  : ''
+              }`}
+            />
+            {confirmPassword && password !== confirmPassword && (
+              <p className="text-destructive text-sm font-medium">Passwords do not match</p>
+            )}
+          </div>
+
           <Button 
             type="submit" 
             className="w-full bg-primary hover:bg-secondary/90 text-secondary-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black" 
-            disabled={loading}
+            disabled={loading || (!!password && !!confirmPassword && password !== confirmPassword)}
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </Button>

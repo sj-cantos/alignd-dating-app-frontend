@@ -46,7 +46,7 @@ return (
               <div className="bg-primary border-2 border-foreground p-2 shadow-brutal-sm transition-all duration-300 group-hover:shadow-brutal group-hover:-translate-x-1 group-hover:-translate-y-1">
                 <Heart className="w-6 h-6 fill-background text-background" />
               </div>
-              <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Charmed</h1>
+              <h1 className="text-2xl font-display font-bold transition-colors duration-300 group-hover:text-primary">Alignd</h1>
             </div>
             <div className="flex gap-3 items-center">
               <ThemeToggle />
