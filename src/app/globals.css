@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Tailwind CSS v4 Theme Configuration */
-:root {
+@theme {
   --color-background: #fefce8;
   --color-foreground: #000000;
   --color-card: #ffffff;
