@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ProfileCard } from '@/components/ProfileCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { useAuth } from '@/hooks/useAuth';
 import { Gender, profileApi } from '@/lib/api';
+import { config } from '@/lib/config';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, User, Camera, MapPin, Heart, Edit3 } from 'lucide-react';
 
@@ -130,8 +132,8 @@ export default function Profile() {
       setSelectedFile(null);
     } catch (err: any) {
       // Optional fallback: try unsigned client upload if env vars are present
-      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+      const cloudName = config.CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = config.CLOUDINARY_UPLOAD_PRESET;
       try {
         if (cloudName && uploadPreset) {
           const form = new FormData();
@@ -158,73 +160,77 @@ export default function Profile() {
     }
   };
 
+  // Convert form data to MatchUser format for ProfileCard preview
+  const getPreviewProfile = () => ({
+    id: user?.id || 'preview',
+    name: formData.name || 'Your Name',
+    age: formData.age,
+    gender: formData.gender,
+    bio: formData.bio || 'Your bio will appear here...',
+    interests: formData.interests,
+    profilePictureUrl: formData.profilePictureUrl,
+    location: user?.location || { latitude: 0, longitude: 0 },
+    distance: undefined, // Not shown in preview
+  });
+
   return (
     <ProtectedRoute requireCompleteProfile={true}>
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
+          {/* Header with navigation and edit button */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+           
+              {!isEditing ? (
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black"
+                >
+                  <Edit3 size={20} className="mr-2" />
+                  EDIT PROFILE
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsEditing(false)}
+                    variant="outline"
+                    className="bg-card border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-bold"
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-success hover:bg-success/90 text-success-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black"
+                  >
+                    <Save size={20} className="mr-2" />
+                    {saving ? 'SAVING...' : 'SAVE'}
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            
+          </div>
 
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Profile Preview Card */}
-            <Card className="bg-card border-brutal border-border shadow-brutal-lg overflow-hidden animate-fade-in-up">
-              <CardHeader className="bg-gradient-to-r from-pink-bright to-primary border-b-brutal border-border">
-                <CardTitle className="text-primary-foreground font-black text-xl flex items-center gap-2">
-                  <User size={24} />
-                  Profile Preview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {/* Profile Picture */}
-                  <div className="text-center">
-                    <div className="relative w-32 h-32 mx-auto mb-4">
-                      {formData.profilePictureUrl ? (
-                        <img
-                          src={formData.profilePictureUrl}
-                          alt="Profile"
-                          className="w-full h-full object-cover border-brutal border-border shadow-brutal"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-pink-bright/20 to-primary/20 border-brutal border-border shadow-brutal flex items-center justify-center">
-                          <Camera size={40} className="text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Basic Info */}
-                  <div className="text-center">
-                    <h2 className="text-2xl font-black text-foreground">{formData.name}</h2>
-                    <p className="text-lg font-bold text-muted-foreground">{formData.age} years old</p>
-                    <p className="text-sm font-medium text-muted-foreground capitalize">{formData.gender}</p>
-                  </div>
-
-                  {/* Bio */}
-                  {formData.bio && (
-                    <div className="border-l-brutal border-primary pl-4">
-                      <p className="text-foreground font-medium italic">"{formData.bio}"</p>
-                    </div>
-                  )}
-
-                  {/* Interests */}
-                  {formData.interests.length > 0 && (
-                    <div>
-                      <h3 className="font-black text-foreground text-sm uppercase tracking-wide mb-2">Interests</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {formData.interests.map((interest, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 bg-accent border-2 border-border text-accent-foreground font-bold text-xs uppercase transform rotate-1"
-                          >
-                            {interest}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="animate-fade-in-up">
+              <h2 className="text-2xl font-black text-foreground mb-4 flex items-center gap-2">
+                <User size={24} />
+                Profile Preview
+              </h2>
+              <p className="text-muted-foreground font-medium mb-6">
+                This is how other users will see your profile
+              </p>
+              <ProfileCard
+                profile={getPreviewProfile()}
+                onSwipe={() => {}} // No-op for preview
+                preview={true}
+              />
+            </div>
 
             {/* Edit Form */}
             <Card className="bg-card border-brutal border-border shadow-brutal-lg animate-fade-in-up">
@@ -445,27 +451,7 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Save Button */}
-                {isEditing && (
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      onClick={() => setIsEditing(false)}
-                      variant="outline"
-                      className="flex-1 border-brutal border-border font-bold bg-card"
-                      disabled={saving}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="flex-1 bg-success hover:bg-success/90 text-success-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-black"
-                    >
-                      <Save size={20} className="mr-2" />
-                      {saving ? 'SAVING...' : 'SAVE PROFILE'}
-                    </Button>
-                  </div>
-                )}
+                {/* Save Button - Remove from here since it's now in header */}
               </CardContent>
             </Card>
           </div>

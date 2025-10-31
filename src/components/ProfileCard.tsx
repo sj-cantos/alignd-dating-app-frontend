@@ -10,9 +10,10 @@ interface ProfileCardProps {
   profile: MatchUser;
   onSwipe: (action: SwipeAction) => void;
   loading?: boolean;
+  preview?: boolean; // When true, disables swipe and hides action buttons
 }
 
-export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardProps) {
+export function ProfileCard({ profile, onSwipe, loading = false, preview = false }: ProfileCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -105,138 +106,147 @@ export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardPr
   const nopeOpacity = Math.max(0, Math.min(1, -dragOffset.x / 100));
 
   return (
-    <Card className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none">
-      <div
-        ref={cardRef}
-        className="relative h-96 bg-muted cursor-grab active:cursor-grabbing touch-none"
-        style={{
-          transform: isDragging
-            ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`
-            : isSwiping
-            ? 'translateX(0) translateY(0) rotate(0deg)'
-            : 'translateX(0) translateY(0) rotate(0deg)',
-          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-          opacity,
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {!imageError && profile.profilePictureUrl ? (
-          <img
-            src={profile.profilePictureUrl}
-            alt={`${profile.name}'s profile`}
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-bright/20 to-primary/20">
-            <Users size={80} className="text-muted-foreground" />
-          </div>
-        )}
-
-        {/* top gradient like the provided sample */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-
-        {/* Swipe indicators */}
-        {isDragging && (
-          <>
-            <div
-              className="absolute top-6 left-6 transform -rotate-12 pointer-events-none transition-opacity"
-              style={{ opacity: likeOpacity }}
-            >
-              <div className="bg-success border-brutal border-border px-4 py-2 shadow-brutal">
-                <Heart className="w-8 h-8 text-success-foreground fill-success-foreground" />
-              </div>
-            </div>
-            <div
-              className="absolute top-6 right-6 transform rotate-12 pointer-events-none transition-opacity"
-              style={{ opacity: nopeOpacity }}
-            >
-              <div className="bg-destructive border-brutal border-border px-4 py-2 shadow-brutal">
-                <X className="w-8 h-8 text-destructive-foreground" />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Loading overlay */}
-        {loading && (
-          <div className="absolute inset-0 bg-foreground/30 flex items-center justify-center">
-            <div className="bg-card px-4 py-2 border-brutal border-border font-black">Processing...</div>
-          </div>
-        )}
+    <Card className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none rounded-lg">
+  <div
+    ref={cardRef}
+    className={`relative h-96 bg-muted ${preview ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} touch-none overflow-hidden rounded-lg`}
+    style={{
+      transform: preview 
+        ? 'translateX(0) translateY(0) rotate(0deg)'
+        : isDragging
+        ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`
+        : 'translateX(0) translateY(0) rotate(0deg)',
+      transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+      opacity: preview ? 1 : opacity,
+    }}
+    {...(!preview && {
+      onMouseDown: handleMouseDown,
+      onMouseMove: handleMouseMove,
+      onMouseUp: handleMouseUp,
+      onMouseLeave: handleMouseUp,
+      onTouchStart: handleTouchStart,
+      onTouchMove: handleTouchMove,
+      onTouchEnd: handleTouchEnd,
+    })}
+  >
+    {/* Profile Image */}
+    {!imageError && profile.profilePictureUrl ? (
+      <img
+        src={profile.profilePictureUrl}
+        alt={`${profile.name}'s profile`}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${
+          imageLoaded ? 'opacity-100' : 'opacity-0'
+        }`}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageError(true)}
+      />
+    ) : (
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-bright/20 to-primary/20">
+        <Users size={80} className="text-muted-foreground" />
       </div>
+    )}
 
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          {/* Name and Age */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-foreground">{profile.name}</h2>
-            <span className="text-xl font-bold bg-secondary px-3 py-1 border-brutal border-border transform -rotate-2 text-secondary-foreground">
-              {profile.age}
-            </span>
-          </div>
+    {/* Top gradient overlay */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
 
-          {/* Bio */}
-          {profile.bio && (
-            <p className="text-foreground/80 font-medium leading-relaxed border-l-brutal border-primary pl-3">{profile.bio}</p>
-          )}
-
-          {/* Distance */}
-          {typeof profile.distance === 'number' && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin size={16} className="text-destructive" />
-              <span className="font-medium">{Math.round(profile.distance)} km away</span>
-            </div>
-          )}
-
-          {/* Interests */}
-          {profile.interests && profile.interests.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="font-black text-foreground text-sm uppercase tracking-wide">Interests</h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.interests.slice(0, 6).map((interest, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-blue-bright/20 border-2 border-border text-foreground font-bold text-xs uppercase transform hover:scale-105 transition-transform"
-                    style={{ transform: `rotate(${(index % 2 === 0 ? 1 : -1) * (Math.random() * 4 - 2)}deg)` }}
-                  >
-                    {interest}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 pt-4">
-            <Button
-              onClick={handlePass}
-              disabled={loading}
-              className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground border-brutal border-border shadow-brutal-sm hover:shadow-brutal transition-all duration-200 font-black text-lg"
-            >
-              <X size={24} className="mr-2" />
-              PASS
-            </Button>
-            <Button
-              onClick={handleLike}
-              disabled={loading}
-              className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground border-brutal border-border shadow-brutal-sm hover:shadow-brutal transition-all duration-200 font-black text-lg"
-            >
-              <Heart size={24} className="mr-2" />
-              LIKE
-            </Button>
+    {/* Swipe indicators */}
+    {!preview && isDragging && (
+      <>
+        <div
+          className="absolute top-6 left-6 transform -rotate-12 pointer-events-none transition-opacity"
+          style={{ opacity: likeOpacity }}
+        >
+          <div className="bg-success border-brutal border-border px-5 py-2 shadow-brutal-lg flex items-center justify-center">
+            <Heart className="w-8 h-8 text-success-foreground fill-success-foreground" />
           </div>
         </div>
-      </CardContent>
-    </Card>
+        <div
+          className="absolute top-6 right-6 transform rotate-12 pointer-events-none transition-opacity"
+          style={{ opacity: nopeOpacity }}
+        >
+          <div className="bg-destructive border-brutal border-border px-5 py-2 shadow-brutal-lg flex items-center justify-center">
+            <X className="w-8 h-8 text-destructive-foreground" />
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Loading overlay */}
+    {loading && (
+      <div className="absolute inset-0 bg-foreground/30 flex items-center justify-center">
+        <div className="bg-card px-6 py-3 border-brutal border-border font-black rounded-lg">Processing...</div>
+      </div>
+    )}
+  </div>
+
+  {/* Card Content */}
+  <CardContent className="p-6">
+    <div className="space-y-4">
+      {/* Name and Age */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-black text-foreground">{profile.name}</h2>
+        <span className="text-lg font-bold bg-secondary px-3 py-1 border-brutal border-border transform -rotate-2 text-secondary-foreground rounded">
+          {profile.age}
+        </span>
+      </div>
+
+      {/* Bio */}
+      {profile.bio && (
+        <p className="text-foreground/80 font-medium leading-relaxed border-l-brutal border-primary pl-3">
+          {profile.bio}
+        </p>
+      )}
+
+      {/* Distance */}
+      {typeof profile.distance === 'number' && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <MapPin size={16} className="text-destructive" />
+          <span className="font-medium">{Math.round(profile.distance)} km away</span>
+        </div>
+      )}
+
+      {/* Interests */}
+      {profile.interests && profile.interests.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="font-black text-foreground text-sm uppercase tracking-wide">Interests</h3>
+          <div className="flex flex-wrap gap-2">
+            {profile.interests.slice(0, 6).map((interest, index) => (
+              <span
+                key={index}
+                className={`px-3 py-1 bg-blue-bright/20 border-2 border-border text-foreground font-bold text-xs uppercase rounded-sm transform transition-transform hover:scale-105`}
+                style={{ transform: `rotate(${(index % 2 === 0 ? 1 : -1) * (Math.random() * 3 + 1)}deg)` }}
+              >
+                {interest}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      {!preview && (
+        <div className="flex gap-4 pt-4">
+          <Button
+            onClick={handlePass}
+            disabled={loading}
+            className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-lg rounded"
+          >
+            <X size={24} className="mr-2" />
+            PASS
+          </Button>
+          <Button
+            onClick={handleLike}
+            disabled={loading}
+            className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground border-brutal border-border shadow-brutal-lg hover:shadow-brutal transition-all duration-200 font-black text-lg rounded"
+          >
+            <Heart size={24} className="mr-2" />
+            LIKE
+          </Button>
+        </div>
+      )}
+    </div>
+  </CardContent>
+</Card>
+
   );
 }

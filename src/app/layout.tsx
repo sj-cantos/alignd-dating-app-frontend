@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Charmd - Find Your Perfect Match",
+  title: "Alignd - Find Your Perfect Match",
   description: "A modern dating app with neobrutalism design",
 };
 

@@ -113,9 +113,9 @@ return (
               </div>
             </div>
           </div>
-          <div className="relative">
-            <div className="border-brutal border-foreground shadow-brutal-lg overflow-hidden rounded-lg">
-              <Image src={heroImage} alt="Dating app illustration" className="w-full h-auto" />
+          <div className="relative animate-fade-in-right animation-delay-400">
+            <div className="border-brutal border-foreground shadow-brutal-lg overflow-hidden rounded-lg rotate-[2deg] transition-all duration-500 hover:rotate-0 hover:scale-105 hover:shadow-brutal-lg">
+              <Image src={heroImage} alt="Dating app illustration" className="w-full h-auto transition-transform duration-500 hover:scale-110" />
             </div>
           </div>
         </div>
@@ -232,8 +232,8 @@ return (
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="bg-primary border-brutal border-foreground shadow-brutal-lg rounded-lg p-12 text-center">
-          <Sparkles className="w-16 h-16 mx-auto mb-6 text-primary-foreground" />
+        <div className="bg-primary border-brutal border-foreground shadow-brutal-lg rounded-lg p-12 text-center rotate-[-1deg] transition-all duration-500 hover:rotate-0 hover:scale-105 animate-fade-in-up">
+          <Sparkles className="w-16 h-16 mx-auto mb-6 text-primary-foreground transition-transform duration-300 hover:scale-110 hover:rotate-12" />
           <h3 className="text-4xl md:text-5xl font-display font-bold mb-4 text-primary-foreground">
             Ready to Find Your Match?
           </h3>
@@ -245,14 +245,14 @@ return (
               variant="secondary" 
               size="lg" 
               onClick={() => router.push('/auth')}
-              className="shadow-brutal"
+              className="transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm"
             >
               Get Started Now
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              className="bg-card shadow-brutal" 
+              className="bg-card transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm" 
               onClick={() => router.push('/auth')}
             >
               Sign In
@@ -315,10 +315,10 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ icon, bgColor, title, description }: FeatureCardProps) => (
-  <Card className={`${bgColor} border-brutal border-foreground shadow-brutal p-8`}>
+  <Card className={`${bgColor} border-brutal border-foreground shadow-brutal p-8 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all duration-300 group`}>
     <div className="mb-4">{icon}</div>
-    <h4 className="text-2xl font-display font-bold mb-3">{title}</h4>
-    <p className="text-foreground/80 font-semibold">{description}</p>
+    <h4 className="text-2xl font-display font-bold mb-3 transition-colors duration-300 group-hover:text-primary">{title}</h4>
+    <p className="text-foreground/80 font-semibold transition-colors duration-300 group-hover:text-foreground">{description}</p>
   </Card>
 );
 
@@ -329,12 +329,12 @@ interface StepCardProps {
 }
 
 const StepCard = ({ number, title, description }: StepCardProps) => (
-  <div className="text-center">
-    <div className="bg-primary border-brutal border-foreground shadow-brutal w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+  <div className="text-center group">
+    <div className="bg-primary border-brutal border-foreground shadow-brutal w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
       <span className="text-3xl font-display font-bold text-primary-foreground">{number}</span>
     </div>
-    <h4 className="text-2xl font-display font-bold mb-3">{title}</h4>
-    <p className="text-muted-foreground font-semibold">{description}</p>
+    <h4 className="text-2xl font-display font-bold mb-3 transition-colors duration-300 group-hover:text-primary">{title}</h4>
+    <p className="text-muted-foreground font-semibold transition-colors duration-300 group-hover:text-foreground">{description}</p>
   </div>
 );
 
@@ -345,8 +345,8 @@ interface TestimonialCardProps {
 }
 
 const TestimonialCard = ({ quote, name, color }: TestimonialCardProps) => (
-  <Card className={`${color} border-brutal border-foreground shadow-brutal p-6`}>
-    <p className="text-lg font-semibold mb-4 text-foreground">&quot;{quote}&quot;</p>
-    <p className="font-bold text-foreground">— {name}</p>
+  <Card className={`${color} border-brutal border-foreground shadow-brutal p-6 rotate-[1deg] hover:rotate-0 transition-all duration-300 group hover:scale-105`}>
+    <p className="text-lg font-semibold mb-4 text-foreground transition-colors duration-300 group-hover:text-primary">&quot;{quote}&quot;</p>
+    <p className="font-bold text-foreground transition-colors duration-300 group-hover:text-primary">— {name}</p>
   </Card>
 );

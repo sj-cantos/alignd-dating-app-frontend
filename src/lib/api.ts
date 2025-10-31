@@ -1,10 +1,9 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { config } from './config';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: config.API_BASE_URL,
 });
 
 // Add token to requests if available

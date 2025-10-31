@@ -59,11 +59,11 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div 
-            className="flex items-center cursor-pointer transform -rotate-1 hover:rotate-0 transition-transform duration-200"
+            className="flex items-center cursor-pointer transform hover:rotate-0 transition-transform duration-200"
             onClick={() => router.push('/discover')}
           >
             <div className="bg-gradient-to-r from-primary to-pink-bright text-primary-foreground px-4 py-2 border-brutal border-border shadow-brutal-sm font-black text-xl">
-              💘 CHARMD
+              💘 ALIGND
             </div>
           </div>
 
@@ -80,8 +80,8 @@ export function Navigation() {
                     shadow-brutal-sm hover:shadow-brutal
                     transition-all duration-200 transform hover:scale-105
                     ${isActive 
-                      ? `bg-gradient-to-r ${item.color} text-card rotate-1` 
-                      : 'bg-card text-foreground hover:bg-muted -rotate-1'
+                      ? `bg-gradient-to-r ${item.color} text-card` 
+                      : 'bg-card text-foreground hover:bg-muted'
                     }
                   `}
                 >
@@ -109,7 +109,7 @@ export function Navigation() {
             
             <Button
               onClick={handleLogout}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-2 border-border shadow-brutal-sm hover:shadow-brutal transition-all duration-200 font-black transform rotate-1 hover:rotate-0"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-2 border-border shadow-brutal-sm hover:shadow-brutal transition-all duration-200 font-black transform hover:rotate-0"
             >
               <LogOut size={16} className="md:mr-2" />
               <span className="hidden md:inline">LOGOUT</span>

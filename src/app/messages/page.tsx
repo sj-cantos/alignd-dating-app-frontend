@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { matchesApi, MatchUser, chatApi } from '@/lib/api';
+import { config } from '@/lib/config';
 import { toast } from 'sonner';
 import { ArrowLeft, Send, Users, MessageCircle } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
@@ -63,7 +64,7 @@ export default function Messages() {
     const token = Cookies.get('token');
     if (!token) return;
     
-    const s = io('http://localhost:8000/chat', {
+    const s = io(`${config.API_BASE_URL}/chat`, {
       transports: ['websocket'],
       auth: { token },
     });
