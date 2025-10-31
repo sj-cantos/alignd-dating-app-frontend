@@ -68,36 +68,7 @@ export default function Matches() {
     <ProtectedRoute requireCompleteProfile={true}>
       <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 p-4">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <Button
-                onClick={() => router.push('/discover')}
-                variant="outline"
-                className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[6px_6px_0px_0px_#000] transition-all duration-200 font-bold transform -rotate-1"
-              >
-                <ArrowLeft size={20} className="mr-2" />
-                Back to Discover
-              </Button>
-              
-              <Button
-                onClick={loadMatches}
-                className="bg-blue-400 hover:bg-blue-500 text-white border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[6px_6px_0px_0px_#000] transition-all duration-200 font-bold transform rotate-1"
-              >
-                <RefreshCw size={20} className="mr-2" />
-                Refresh
-              </Button>
-            </div>
-            
-            <div className="text-center">
-              <h1 className="text-4xl font-black text-black mb-2 transform -rotate-1">
-                💖 YOUR MATCHES 💖
-              </h1>
-              <p className="text-xl font-bold text-gray-800 bg-yellow-300 inline-block px-4 py-2 border-2 border-black transform rotate-1">
-                {matches.length} amazing {matches.length === 1 ? 'match' : 'matches'} waiting for you!
-              </p>
-            </div>
-          </div>
+          
 
           {/* Matches Grid */}
           {matches.length > 0 ? (

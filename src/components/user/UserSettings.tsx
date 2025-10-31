@@ -14,7 +14,7 @@ export function UserSettings() {
     name: user?.name || '',
     email: user?.email || '',
     bio: user?.bio || '',
-    picture: user?.profilePictureUrl || ''
+    profilePictureUrl: user?.profilePictureUrl || ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -30,7 +30,11 @@ export function UserSettings() {
     clearError?.();
 
     try {
-      await updateProfile(formData);
+      // The API expects UpdateProfileRequest; send only supported fields
+      await updateProfile({
+        bio: formData.bio,
+        profilePictureUrl: formData.profilePictureUrl,
+      });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -90,6 +94,9 @@ export function UserSettings() {
               placeholder="Tell us about yourself..."
             />
           </div>
+
+          {/* Hidden photo URL field for completeness; wire to your uploader if needed */}
+          <input type="hidden" name="profilePictureUrl" value={formData.profilePictureUrl} readOnly />
 
           {error && (
             <div className="text-sm text-red-600 bg-red-50 p-2 rounded">

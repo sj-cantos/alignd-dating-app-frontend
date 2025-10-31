@@ -162,38 +162,7 @@ export default function Profile() {
     <ProtectedRoute requireCompleteProfile={true}>
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <Button
-                onClick={() => router.push('/discover')}
-                variant="outline"
-                className="bg-card border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-bold transform -rotate-1"
-              >
-                <ArrowLeft size={20} className="mr-2" />
-                Back to Discover
-              </Button>
-              
-              {!isEditing && (
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-bold transform rotate-1"
-                >
-                  <Edit3 size={20} className="mr-2" />
-                  Edit Profile
-                </Button>
-              )}
-            </div>
-            
-            <div className="text-center">
-              <h1 className="text-4xl font-black text-foreground mb-2 transform -rotate-1">
-                👤 YOUR PROFILE 👤
-              </h1>
-              <p className="text-xl font-bold text-secondary-foreground bg-secondary inline-block px-4 py-2 border-2 border-border transform rotate-1">
-                {isEditing ? 'Edit your amazing profile!' : 'Looking great!'}
-              </p>
-            </div>
-          </div>
+
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Profile Preview Card */}

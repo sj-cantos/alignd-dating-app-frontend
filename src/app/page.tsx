@@ -75,21 +75,21 @@ return (
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in-up">
-            <div className="inline-block bg-accent border-brutal border-foreground px-4 py-2 rotate-[-2deg] shadow-brutal-sm transition-all duration-500 hover:rotate-0 hover:scale-105 hover:shadow-brutal">
+            <div className="inline-block bg-accent border-brutal border-foreground px-4 py-2 shadow-brutal-sm">
               <span className="font-bold text-sm">💫 Over 1M+ Matches Made</span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-display font-bold leading-tight animate-fade-in-up animation-delay-200">
-              Find Your <span className="text-primary transition-colors duration-300 hover:text-secondary">Perfect</span> Match
+            <h2 className="text-5xl md:text-7xl font-display font-bold leading-tight">
+              Find Your <span className="text-primary">Perfect</span> Match
             </h2>
-            <p className="text-xl text-muted-foreground font-semibold animate-fade-in-up animation-delay-400">
+            <p className="text-xl text-muted-foreground font-semibold">
               The bold new way to meet people. Swipe right on your future with Charm'd - where real connections happen.
             </p>
-            <div className="flex flex-wrap gap-4 animate-fade-in-up animation-delay-600">
+            <div className="flex flex-wrap gap-4">
               <Button 
                 variant="default" 
                 size="lg" 
                 onClick={() => router.push('/auth')}
-                className="transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm"
+                className="shadow-brutal"
               >
                 Get Started Free
               </Button>
@@ -97,25 +97,25 @@ return (
                 variant="secondary" 
                 size="lg" 
                 onClick={() => router.push('/auth')}
-                className="transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm"
+                className="shadow-brutal"
               >
                 Sign In
               </Button>
             </div>
-            <div className="flex items-center gap-8 pt-4 animate-fade-in-up animation-delay-800">
-              <div className="transition-all duration-300 hover:scale-105">
+            <div className="flex items-center gap-8 pt-4">
+              <div>
                 <p className="text-3xl font-display font-bold">10M+</p>
                 <p className="text-sm text-muted-foreground font-semibold">Active Users</p>
               </div>
-              <div className="transition-all duration-300 hover:scale-105">
+              <div>
                 <p className="text-3xl font-display font-bold">98%</p>
                 <p className="text-sm text-muted-foreground font-semibold">Success Rate</p>
               </div>
             </div>
           </div>
-          <div className="relative animate-fade-in-right animation-delay-400">
-            <div className="border-brutal border-foreground shadow-brutal-lg overflow-hidden rounded-lg rotate-[2deg] transition-all duration-500 hover:rotate-0 hover:scale-105 hover:shadow-brutal-lg">
-              <Image src={heroImage} alt="Dating app illustration" className="w-full h-auto transition-transform duration-500 hover:scale-110" />
+          <div className="relative">
+            <div className="border-brutal border-foreground shadow-brutal-lg overflow-hidden rounded-lg">
+              <Image src={heroImage} alt="Dating app illustration" className="w-full h-auto" />
             </div>
           </div>
         </div>
@@ -232,8 +232,8 @@ return (
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="bg-primary border-brutal border-foreground shadow-brutal-lg rounded-lg p-12 text-center rotate-[-1deg] transition-all duration-500 hover:rotate-0 hover:scale-105 animate-fade-in-up">
-          <Sparkles className="w-16 h-16 mx-auto mb-6 text-primary-foreground transition-transform duration-300 hover:scale-110 hover:rotate-12" />
+        <div className="bg-primary border-brutal border-foreground shadow-brutal-lg rounded-lg p-12 text-center">
+          <Sparkles className="w-16 h-16 mx-auto mb-6 text-primary-foreground" />
           <h3 className="text-4xl md:text-5xl font-display font-bold mb-4 text-primary-foreground">
             Ready to Find Your Match?
           </h3>
@@ -245,14 +245,14 @@ return (
               variant="secondary" 
               size="lg" 
               onClick={() => router.push('/auth')}
-              className="transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm"
+              className="shadow-brutal"
             >
               Get Started Now
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              className="bg-card transition-all duration-300 hover:scale-105 hover:shadow-brutal-sm" 
+              className="bg-card shadow-brutal" 
               onClick={() => router.push('/auth')}
             >
               Sign In
@@ -315,10 +315,10 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ icon, bgColor, title, description }: FeatureCardProps) => (
-  <Card className={`${bgColor} border-brutal border-foreground shadow-brutal p-8 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all duration-300 group`}>
+  <Card className={`${bgColor} border-brutal border-foreground shadow-brutal p-8`}>
     <div className="mb-4">{icon}</div>
-    <h4 className="text-2xl font-display font-bold mb-3 transition-colors duration-300 group-hover:text-primary">{title}</h4>
-    <p className="text-foreground/80 font-semibold transition-colors duration-300 group-hover:text-foreground">{description}</p>
+    <h4 className="text-2xl font-display font-bold mb-3">{title}</h4>
+    <p className="text-foreground/80 font-semibold">{description}</p>
   </Card>
 );
 
@@ -329,12 +329,12 @@ interface StepCardProps {
 }
 
 const StepCard = ({ number, title, description }: StepCardProps) => (
-  <div className="text-center group">
-    <div className="inline-block bg-primary border-brutal border-foreground shadow-brutal w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
+  <div className="text-center">
+    <div className="bg-primary border-brutal border-foreground shadow-brutal w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
       <span className="text-3xl font-display font-bold text-primary-foreground">{number}</span>
     </div>
-    <h4 className="text-2xl font-display font-bold mb-3 transition-colors duration-300 group-hover:text-primary">{title}</h4>
-    <p className="text-muted-foreground font-semibold transition-colors duration-300 group-hover:text-foreground">{description}</p>
+    <h4 className="text-2xl font-display font-bold mb-3">{title}</h4>
+    <p className="text-muted-foreground font-semibold">{description}</p>
   </div>
 );
 
@@ -345,8 +345,8 @@ interface TestimonialCardProps {
 }
 
 const TestimonialCard = ({ quote, name, color }: TestimonialCardProps) => (
-  <Card className={`${color} border-brutal border-foreground shadow-brutal p-6 rotate-[1deg] hover:rotate-0 transition-all duration-300 group hover:scale-105`}>
-    <p className="text-lg font-semibold mb-4 text-foreground transition-colors duration-300 group-hover:text-primary">&quot;{quote}&quot;</p>
-    <p className="font-bold text-foreground transition-colors duration-300 group-hover:text-primary">— {name}</p>
+  <Card className={`${color} border-brutal border-foreground shadow-brutal p-6`}>
+    <p className="text-lg font-semibold mb-4 text-foreground">&quot;{quote}&quot;</p>
+    <p className="font-bold text-foreground">— {name}</p>
   </Card>
 );

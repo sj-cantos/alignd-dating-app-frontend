@@ -101,15 +101,7 @@ export default function Discover() {
       <div className="min-h-screen bg-background bg-grid-pattern-sm p-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="mb-8 text-center animate-fade-in-up">
-            <h1 className="text-4xl font-black text-foreground mb-2 transform -rotate-1">
-              💘 DISCOVER PEOPLE 💘
-            </h1>
-            <p className="text-xl font-bold text-secondary-foreground bg-secondary inline-block px-4 py-2 border-2 border-border transform rotate-1">
-              Hey {user?.name}! Find your perfect match!
-            </p>
-          </div>
-
+    
           {/* Profile Cards */}
           <div className="relative mb-8 animation-delay-200">
             {currentProfile ? (
@@ -136,21 +128,7 @@ export default function Discover() {
             )}
           </div>
 
-          {/* Bottom Stats */}
-          <div className="flex justify-center gap-4 animation-delay-400 animate-fade-in-up">
-            <div className="bg-card border-2 border-border shadow-brutal-sm px-4 py-2 transform -rotate-1">
-              <span className="font-black text-foreground">
-                {currentProfileIndex + 1} / {profiles.length}
-              </span>
-            </div>
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="bg-destructive/20 hover:bg-destructive/30 text-destructive border-2 border-border shadow-brutal-sm hover:shadow-brutal transition-all duration-200 font-black transform rotate-1"
-            >
-              LOGOUT
-            </Button>
-          </div>
+       
         </div>
 
         {/* Match Notification */}

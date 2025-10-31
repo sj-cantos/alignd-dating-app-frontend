@@ -15,97 +15,117 @@ interface ProfileCardProps {
 export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  // drag state
-  const [dragging, setDragging] = useState(false);
-  const [dx, setDx] = useState(0);
-  const [dy, setDy] = useState(0);
-  const pointerIdRef = useRef<number | null>(null);
-  const startRef = useRef<{ x: number; y: number } | null>(null);
-  const threshold = 120; // px to trigger swipe
 
-  // Reset transforms when loading state changes or profile changes
+  // Drag/swipe state (inspired by provided implementation)
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isSwiping, setIsSwiping] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const swipeThreshold = 100;
+
+  // Reset when profile or loading changes
   useEffect(() => {
-    setDragging(false);
-    setDx(0);
-    setDy(0);
-    pointerIdRef.current = null;
-    startRef.current = null;
-  }, [loading, profile?.id]);
+    setIsDragging(false);
+    setDragOffset({ x: 0, y: 0 });
+    setIsSwiping(false);
+    if (cardRef.current) {
+      cardRef.current.style.transition = '';
+      cardRef.current.style.transform = '';
+    }
+  }, [profile?.id, loading]);
+
+  const flyOffAndSwipe = (liked: boolean) => {
+    if (!cardRef.current) return;
+    setIsSwiping(true);
+    const direction = liked ? 1 : -1;
+    const flyOffDistance = window.innerWidth;
+    cardRef.current.style.transition = 'transform 0.3s ease-out';
+    cardRef.current.style.transform = `translateX(${direction * flyOffDistance}px) rotate(${direction * 20}deg)`;
+    // Call parent swipe after animation so UI feels natural
+    setTimeout(() => {
+      onSwipe(liked ? SwipeAction.LIKE : SwipeAction.PASS);
+    }, 300);
+  };
 
   const handleLike = () => {
-    if (!loading) onSwipe(SwipeAction.LIKE);
+    if (loading || isSwiping) return;
+    flyOffAndSwipe(true);
   };
 
   const handlePass = () => {
-    if (!loading) onSwipe(SwipeAction.PASS);
+    if (loading || isSwiping) return;
+    flyOffAndSwipe(false);
   };
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (loading) return;
-    // Only primary button / single touch
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    pointerIdRef.current = e.pointerId;
-    startRef.current = { x: e.clientX, y: e.clientY };
-    setDragging(true);
+  const handleDragStart = (clientX: number, clientY: number) => {
+    if (isSwiping || loading) return;
+    setIsDragging(true);
+    setDragStart({ x: clientX, y: clientY });
   };
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging) return;
-    if (pointerIdRef.current !== e.pointerId) return;
-    const start = startRef.current;
-    if (!start) return;
-    const ndx = e.clientX - start.x;
-    const ndy = e.clientY - start.y;
-    setDx(ndx);
-    setDy(ndy);
+  const handleDragMove = (clientX: number, clientY: number) => {
+    if (!isDragging || isSwiping || loading) return;
+    const deltaX = clientX - dragStart.x;
+    const deltaY = clientY - dragStart.y;
+    setDragOffset({ x: deltaX, y: deltaY });
   };
 
-  const onPointerUpOrCancel = (e: React.PointerEvent) => {
-    if (pointerIdRef.current !== null && e.pointerId !== pointerIdRef.current) return;
-    const finalDx = dx;
-    // Release capture
-    try {
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // ignore
+  const handleDragEnd = () => {
+    if (!isDragging || isSwiping || loading) return;
+    setIsDragging(false);
+    if (Math.abs(dragOffset.x) > swipeThreshold) {
+      const liked = dragOffset.x > 0;
+      flyOffAndSwipe(liked);
+    } else {
+      setDragOffset({ x: 0, y: 0 });
     }
-    pointerIdRef.current = null;
-    startRef.current = null;
-
-    // Decide swipe
-    if (!loading) {
-      if (finalDx > threshold) {
-        onSwipe(SwipeAction.LIKE);
-      } else if (finalDx < -threshold) {
-        onSwipe(SwipeAction.PASS);
-      }
-    }
-
-    // Reset position
-    setDragging(false);
-    setDx(0);
-    setDy(0);
   };
 
-  const rotation = Math.max(-20, Math.min(20, dx * 0.05));
-  const likeOpacity = Math.min(1, Math.max(0, dx / threshold));
-  const nopeOpacity = Math.min(1, Math.max(0, -dx / threshold));
+  // Mouse events
+  const handleMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX, e.clientY);
+  const handleMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX, e.clientY);
+  const handleMouseUp = () => handleDragEnd();
+
+  // Touch events
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    handleDragStart(touch.clientX, touch.clientY);
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    handleDragMove(touch.clientX, touch.clientY);
+  };
+  const handleTouchEnd = () => handleDragEnd();
+
+  // Visuals
+  const rotation = isDragging ? dragOffset.x / 20 : 0;
+  const opacity = isDragging ? Math.max(0.5, 1 - Math.abs(dragOffset.x) / 300) : 1;
+  const likeOpacity = Math.max(0, Math.min(1, dragOffset.x / 100));
+  const nopeOpacity = Math.max(0, Math.min(1, -dragOffset.x / 100));
 
   return (
-    <Card
-      className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none touch-pan-y"
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUpOrCancel}
-      onPointerCancel={onPointerUpOrCancel}
-      style={{
-        transform: `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`,
-        transition: dragging ? 'none' : 'transform 200ms ease',
-        cursor: dragging ? 'grabbing' : 'grab',
-      }}
-    >
-      <div className="relative h-96 bg-muted">
+    <Card className="w-full max-w-sm mx-auto bg-card border-brutal border-border shadow-brutal-lg hover:shadow-brutal-lg transition-all duration-200 overflow-hidden animate-fade-in-up select-none">
+      <div
+        ref={cardRef}
+        className="relative h-96 bg-muted cursor-grab active:cursor-grabbing touch-none"
+        style={{
+          transform: isDragging
+            ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`
+            : isSwiping
+            ? 'translateX(0) translateY(0) rotate(0deg)'
+            : 'translateX(0) translateY(0) rotate(0deg)',
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+          opacity,
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {!imageError && profile.profilePictureUrl ? (
           <img
             src={profile.profilePictureUrl}
@@ -122,30 +142,35 @@ export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardPr
           </div>
         )}
 
-        {/* Swipe badges */}
-        <div className="pointer-events-none absolute inset-0">
-          {/* LIKE badge */}
-          <div
-            className="absolute top-4 left-4 px-4 py-2 border-brutal border-border bg-success text-success-foreground font-black shadow-brutal transform -rotate-6"
-            style={{ opacity: likeOpacity }}
-          >
-            LIKE
-          </div>
-          {/* NOPE badge */}
-          <div
-            className="absolute top-4 right-4 px-4 py-2 border-brutal border-border bg-destructive text-destructive-foreground font-black shadow-brutal transform rotate-6"
-            style={{ opacity: nopeOpacity }}
-          >
-            NOPE
-          </div>
-        </div>
-        
+        {/* top gradient like the provided sample */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+
+        {/* Swipe indicators */}
+        {isDragging && (
+          <>
+            <div
+              className="absolute top-6 left-6 transform -rotate-12 pointer-events-none transition-opacity"
+              style={{ opacity: likeOpacity }}
+            >
+              <div className="bg-success border-brutal border-border px-4 py-2 shadow-brutal">
+                <Heart className="w-8 h-8 text-success-foreground fill-success-foreground" />
+              </div>
+            </div>
+            <div
+              className="absolute top-6 right-6 transform rotate-12 pointer-events-none transition-opacity"
+              style={{ opacity: nopeOpacity }}
+            >
+              <div className="bg-destructive border-brutal border-border px-4 py-2 shadow-brutal">
+                <X className="w-8 h-8 text-destructive-foreground" />
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Loading overlay */}
         {loading && (
           <div className="absolute inset-0 bg-foreground/30 flex items-center justify-center">
-            <div className="bg-card px-4 py-2 border-brutal border-border font-black">
-              Processing...
-            </div>
+            <div className="bg-card px-4 py-2 border-brutal border-border font-black">Processing...</div>
           </div>
         )}
       </div>
@@ -162,13 +187,11 @@ export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardPr
 
           {/* Bio */}
           {profile.bio && (
-            <p className="text-foreground/80 font-medium leading-relaxed border-l-brutal border-primary pl-3">
-              {profile.bio}
-            </p>
+            <p className="text-foreground/80 font-medium leading-relaxed border-l-brutal border-primary pl-3">{profile.bio}</p>
           )}
 
           {/* Distance */}
-          {profile.distance && (
+          {typeof profile.distance === 'number' && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin size={16} className="text-destructive" />
               <span className="font-medium">{Math.round(profile.distance)} km away</span>
@@ -184,9 +207,7 @@ export function ProfileCard({ profile, onSwipe, loading = false }: ProfileCardPr
                   <span
                     key={index}
                     className="px-3 py-1 bg-blue-bright/20 border-2 border-border text-foreground font-bold text-xs uppercase transform hover:scale-105 transition-transform"
-                    style={{
-                      transform: `rotate(${(index % 2 === 0 ? 1 : -1) * (Math.random() * 4 - 2)}deg)`,
-                    }}
+                    style={{ transform: `rotate(${(index % 2 === 0 ? 1 : -1) * (Math.random() * 4 - 2)}deg)` }}
                   >
                     {interest}
                   </span>

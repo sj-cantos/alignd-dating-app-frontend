@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,17 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [showChat, setShowChat] = useState(false); // For mobile navigation
+
+  const loadMessages = useCallback(async (targetUserId: string) => {
+    try {
+      const { messages } = await chatApi.getHistory(targetUserId);
+      setMessages(messages as any);
+    } catch (e) {
+      console.error('Failed to load messages', e);
+      setMessages([]);
+    }
+  }, []);
 
   useEffect(() => {
     loadConversations();
@@ -51,45 +62,65 @@ export default function Messages() {
     if (!user) return;
     const token = Cookies.get('token');
     if (!token) return;
+    
     const s = io('http://localhost:8000/chat', {
       transports: ['websocket'],
       auth: { token },
     });
+    
     setSocket(s);
+    
+    s.on('connect', () => {
+      console.log('Socket connected');
+    });
+    
     s.on('connect_error', (err) => {
       console.error('Socket connect error', err);
     });
+    
     s.on('message', (msg: Message) => {
-      const currentTargetId = selectedConversation?.match.id;
-      if (!currentTargetId) return;
-      const involves = msg.senderId === currentTargetId || msg.receiverId === currentTargetId;
-      if (!involves) return;
+      console.log('Received message:', msg);
       setMessages((prev) => {
         // de-dupe by id
         if (prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
-      // update last message for conversation list
-      setConversations((prev) => prev.map((c) => c.matchId === currentTargetId ? { ...c, lastMessage: msg } : c));
+      // update last message for conversation list if it involves current user
+      setConversations((prev) => {
+        return prev.map((c) => {
+          const isInvolved = msg.senderId === c.match.id || msg.receiverId === c.match.id;
+          return isInvolved ? { ...c, lastMessage: msg } : c;
+        });
+      });
     });
-    return () => { s.disconnect(); setSocket(null); };
-  }, [user]);
+    
+    return () => { 
+      s.disconnect(); 
+      setSocket(null); 
+    };
+  }, [user]); // Remove selectedConversation dependency to avoid reconnection loops
 
   // Join current room when a conversation is selected and socket is connected
   useEffect(() => {
-    if (!socket || !selectedConversation) return;
-    socket.emit('join', { targetUserId: selectedConversation.match.id });
-  }, [socket, selectedConversation]);
+    if (!socket || !selectedConversation?.matchId) return;
+    
+    console.log('Joining room for:', selectedConversation.matchId);
+    socket.emit('join', { targetUserId: selectedConversation.matchId });
+    
+    // Load messages when conversation is selected
+    loadMessages(selectedConversation.matchId);
+  }, [socket?.connected, selectedConversation?.matchId, loadMessages]); // Only depend on connection state and matchId
 
   useEffect(() => {
     if (selectedMatchId && conversations.length > 0) {
       const conversation = conversations.find(c => c.matchId === selectedMatchId);
-      if (conversation) {
+      if (conversation && conversation.matchId !== selectedConversation?.matchId) {
         setSelectedConversation(conversation);
+        setShowChat(true); // Show chat on mobile when URL has match param
         loadMessages(conversation.matchId);
       }
     }
-  }, [selectedMatchId, conversations]);
+  }, [selectedMatchId, conversations, selectedConversation?.matchId]);
 
   const loadConversations = async () => {
     try {
@@ -118,32 +149,38 @@ export default function Messages() {
     }
   };
 
-  const loadMessages = async (targetUserId: string) => {
-    try {
-      const { messages } = await chatApi.getHistory(targetUserId);
-      setMessages(messages as any);
-    } catch (e) {
-      console.error('Failed to load messages', e);
-      setMessages([]);
-    }
-  };
-
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || sendingMessage) return;
 
+    const targetUserId = selectedConversation.match.id;
+    const outgoing = newMessage;
+    
+    setSendingMessage(true);
+    setNewMessage('');
+
     try {
-      setSendingMessage(true);
-      const targetUserId = selectedConversation.match.id;
-      const outgoing = newMessage;
-      setNewMessage('');
+      if (!socket || !socket.connected) {
+        throw new Error('Socket not connected');
+      }
+      
       // ensure joined
-      socket?.emit('join', { targetUserId });
+      socket.emit('join', { targetUserId });
+      
       // send message; rely on server echo to render, avoiding duplicates
-      socket?.emit('message', { targetUserId, content: outgoing });
+      socket.emit('message', { targetUserId, content: outgoing });
+      
+      console.log('Message sent:', { targetUserId, content: outgoing });
+      
+      // Reset sending state after a short delay to ensure socket has time to process
+      setTimeout(() => {
+        setSendingMessage(false);
+      }, 500);
+      
     } catch (error) {
       console.error('Failed to send message:', error);
       toast.error('Failed to send message');
-    } finally {
+      // Restore message on error
+      setNewMessage(outgoing);
       setSendingMessage(false);
     }
   };
@@ -174,33 +211,12 @@ export default function Messages() {
     <ProtectedRoute requireCompleteProfile={true}>
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <Button
-                onClick={() => router.push('/matches')}
-                variant="outline"
-                className="bg-card border-brutal border-border shadow-brutal hover:shadow-brutal-lg transition-all duration-200 font-bold transform -rotate-1"
-              >
-                <ArrowLeft size={20} className="mr-2" />
-                Back to Matches
-              </Button>
-            </div>
-            
-            <div className="text-center">
-              <h1 className="text-4xl font-black text-foreground mb-2 transform -rotate-1">
-                💬 MESSAGES 💬
-              </h1>
-              <p className="text-xl font-bold text-secondary-foreground bg-secondary inline-block px-4 py-2 border-2 border-border transform rotate-1">
-                Chat with your matches!
-              </p>
-            </div>
-          </div>
+   
 
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
             {/* Conversations Sidebar */}
-            <div className="lg:col-span-1">
+            <div className={`lg:col-span-1 ${showChat ? 'hidden lg:block' : 'block'}`}>
               <div className="bg-card border-brutal border-border shadow-brutal h-full overflow-hidden">
                 <div className="bg-primary border-b-brutal border-border p-4">
                   <h2 className="font-black text-primary-foreground text-lg">CONVERSATIONS</h2>
@@ -213,7 +229,11 @@ export default function Messages() {
                         key={conversation.matchId}
                         onClick={() => {
                           setSelectedConversation(conversation);
-                          loadMessages(conversation.matchId);
+                          setShowChat(true); // Show chat on mobile
+                          // Update URL to reflect selection
+                          const url = new URL(window.location.href);
+                          url.searchParams.set('match', conversation.matchId);
+                          window.history.pushState({}, '', url.toString());
                         }}
                         className={`w-full p-4 border-b-2 border-border text-left hover:bg-muted transition-colors ${
                           selectedConversation?.matchId === conversation.matchId ? 'bg-accent' : ''
@@ -261,13 +281,26 @@ export default function Messages() {
             </div>
 
             {/* Chat Area */}
-            <div className="lg:col-span-2">
+            <div className={`lg:col-span-2 ${showChat ? 'block' : 'hidden lg:block'}`}>
               <div className="bg-card border-brutal border-border shadow-brutal h-full flex flex-col">
                 {selectedConversation ? (
                   <>
                     {/* Chat Header */}
                     <div className="bg-accent border-b-brutal border-border p-4">
                       <div className="flex items-center gap-3">
+                        {/* Back button for mobile */}
+                        <button
+                          onClick={() => {
+                            setShowChat(false);
+                            // Remove match param from URL
+                            const url = new URL(window.location.href);
+                            url.searchParams.delete('match');
+                            window.history.pushState({}, '', url.toString());
+                          }}
+                          className="lg:hidden bg-card border-brutal border-border shadow-brutal p-2 hover:shadow-brutal-lg transition-all duration-200"
+                        >
+                          <ArrowLeft size={20} />
+                        </button>
                         <div className="w-10 h-10 bg-gradient-to-br from-pink-bright/20 to-primary/20 border-2 border-border flex items-center justify-center">
                           {selectedConversation.match.profilePictureUrl ? (
                             <img
@@ -291,18 +324,18 @@ export default function Messages() {
                       {messages.map((message) => (
                         <div
                           key={message.id}
-                          className={`flex ${message.senderId === user?.id ? 'justify-start' : 'justify-end'}`}
+                          className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
                             className={`max-w-xs lg:max-w-md px-4 py-2 border-2 border-border shadow-brutal ${
                               message.senderId === user?.id
-                                ? 'bg-card text-foreground'
-                                : 'bg-primary text-primary-foreground'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-card text-foreground'
                             }`}
                           >
                             <p className="font-medium">{message.content}</p>
                             <p className={`text-xs mt-1 ${
-                              message.senderId === user?.id ? 'text-muted-foreground' : 'text-primary-foreground/80'
+                              message.senderId === user?.id ? 'text-primary-foreground/80' : 'text-muted-foreground'
                             }`}>
                               {new Date(message.timestamp).toLocaleTimeString()}
                             </p>
@@ -338,6 +371,12 @@ export default function Messages() {
                       <MessageCircle size={80} className="mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-xl font-black text-foreground mb-2">Select a Conversation</h3>
                       <p className="text-muted-foreground font-medium">Choose a match to start chatting!</p>
+                      <button
+                        onClick={() => setShowChat(false)}
+                        className="lg:hidden mt-4 bg-primary text-primary-foreground px-4 py-2 border-brutal border-border shadow-brutal font-bold"
+                      >
+                        ← Back to Conversations
+                      </button>
                     </div>
                   </div>
                 )}

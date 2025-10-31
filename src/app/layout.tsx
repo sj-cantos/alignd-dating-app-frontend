@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { ReduxProvider } from "@/store/provider";
 import { Navigation } from "@/components/Navigation";
+import GridBackground from "@/components/GridBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,18 +28,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ReduxProvider>
-          <Navigation />
-          {children}
-          <Toaster 
-            position="top-center"
-            richColors
-            closeButton
-          />
-        </ReduxProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative min-h-screen`}>
+        <GridBackground />
+        <div className="relative z-10">
+          <ReduxProvider>
+            <Navigation />
+            {children}
+            <Toaster 
+              position="top-center"
+              richColors
+              closeButton
+            />
+          </ReduxProvider>
+        </div>
       </body>
     </html>
   );
