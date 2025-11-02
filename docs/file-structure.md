@@ -162,21 +162,8 @@ hooks/
 ## 🖼️ Assets (`/src/assets`)
 
 ```
-assets/
-├── images/                # Application images
-├── icons/                 # Custom icons (if any)
-└── fonts/                 # Custom fonts (if any)
-```
 
-## 📁 Public Directory (`/public`)
 
-```
-public/
-├── favicon.ico            # Browser favicon
-├── icons/                 # PWA icons (various sizes)
-├── manifest.json          # PWA manifest (if implemented)
-└── robots.txt             # Search engine instructions
-```
 
 ## 📋 Configuration Files
 

@@ -40,6 +40,7 @@ export default function ProfileSetup() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isLocating, setIsLocating] = useState(false);
 
   // Redirect if user is not authenticated
   useEffect(() => {
@@ -82,9 +83,9 @@ export default function ProfileSetup() {
           fallbackToCity();
         },
         {
-          enableHighAccuracy: false,
-          timeout: 10000, // 10s timeout so UI doesn’t hang
-          maximumAge: 600000, // accept a cached fix up to 10 minutes
+          enableHighAccuracy: true,
+          timeout: 20000, // 20s timeout to improve first fix chances
+          maximumAge: 300000, // accept a cached fix up to 5 minutes
         }
       );
     } else {
@@ -225,6 +226,44 @@ export default function ProfileSetup() {
       setIsSubmitting(false);
       router.push('/discover')
     }
+  };
+
+  const detectLocation = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser.');
+      setLocationPermission('denied');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        console.log('Manual geolocation success:', { latitude, longitude, accuracy });
+        setFormData(prev => ({ ...prev, latitude, longitude }));
+        setLocationPermission('granted');
+        toast.success('Location updated from your device');
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('Manual geolocation error:', error);
+        setLocationPermission('denied');
+        let msg = 'Failed to get your location.';
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = 'Location permission denied. Please enable it in your browser settings.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = 'Location unavailable. Try again with better network or GPS.';
+        } else if (error.code === error.TIMEOUT) {
+          msg = 'Timed out trying to get your location. Try again.';
+        }
+        toast.error(msg);
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0,
+      }
+    );
   };
 
   if (loading) {
@@ -390,12 +429,42 @@ export default function ProfileSetup() {
                         {isUploading ? 'Uploading...' : 'Upload Photo'}
                       </Button>
                     )}
+                    {selectedFile && !formData.profilePictureUrl && (
+                      <p className="text-xs text-muted-foreground">
+                        After selecting a file, click <span className="font-semibold">Upload Photo</span> to attach it to your profile.
+                      </p>
+                    )}
                   </div>
                   
                   <p className="text-sm text-muted-foreground text-center">
                     Upload a clear photo of yourself. Supported formats: JPG, PNG, GIF
                   </p>
                 </div>
+              </div>
+
+              {/* Location Controls */}
+              <div className="space-y-3">
+                <Label>Location</Label>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted border-brutal border-border shadow-brutal">
+                  <div className="text-sm text-muted-foreground">
+                    <div className="font-medium text-foreground flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Current coordinates
+                    </div>
+                    <div className="mt-1">
+                      lat: {formData.latitude.toFixed(6)}, lon: {formData.longitude.toFixed(6)}
+                    </div>
+                    <div className="mt-1">Permission: {locationPermission}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" onClick={detectLocation} disabled={isLocating}>
+                      {isLocating ? 'Locating…' : 'Use my location'}
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Tip: If location permission is blocked, click the lock icon in your browser’s address bar and allow Location, then try again.
+                </p>
               </div>
 
               <div className="flex justify-end">
@@ -413,7 +482,7 @@ export default function ProfileSetup() {
                 <Label htmlFor="bio">Bio</Label>
                 <textarea
                   id="bio"
-                  className="w-full min-h-[100px] px-3 py-2 border border-input rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full min-h-[120px] px-3 py-2 bg-card border-brutal border-border shadow-brutal rounded-none resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="Tell us about yourself..."
                   value={formData.bio}
                   onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
@@ -422,24 +491,26 @@ export default function ProfileSetup() {
 
               <div className="space-y-2">
                 <Label>Interests</Label>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex items-stretch gap-2">
                   <Input
                     placeholder="Add an interest"
                     value={currentInterest}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                     onChange={(e) => setCurrentInterest(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleInterestAdd())}
                   />
-                  <Button type="button" onClick={handleInterestAdd}>Add</Button>
+                  <Button type="button" onClick={handleInterestAdd} className="shrink-0 bg-accent">Add</Button>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.interests.map((interest) => (
+                  {formData.interests.map((interest, index) => (
                     <span
                       key={interest}
-                      className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-sm cursor-pointer"
+                      className="px-3 py-1 bg-accent/20 border-brutal border-border text-foreground font-bold text-xs uppercase rounded-none shadow-brutal cursor-pointer transition-transform"
+                      style={{ transform: `rotate(${(index % 2 === 0 ? 1 : -1) * 2}deg)` }}
+                      title="Click to remove"
                       onClick={() => handleInterestRemove(interest)}
                     >
-                      {interest} ×
+                      {interest}
                     </span>
                   ))}
                 </div>

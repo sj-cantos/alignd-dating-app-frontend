@@ -50,7 +50,7 @@ export function MatchCard({ match, onMessage, onUnmatch }: MatchCardProps) {
         {onUnmatch && (
           <button
             onClick={handleUnmatchClick}
-            className="absolute top-2 right-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground p-2 border-2 border-border shadow-brutal-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            className="absolute top-2 right-2 z-10 bg-destructive hover:bg-destructive/90 text-destructive-foreground p-2 border-2 border-border shadow-brutal-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200"
           >
             <X size={16} />
           </button>

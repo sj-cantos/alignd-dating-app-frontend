@@ -1,40 +1,46 @@
-<<<<<<< HEAD
-# Charmed-Dating-App
-=======
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Charmed Dating App – Frontend
+
+This is the Next.js frontend for the Charmed/Alignd dating app.
 
 ## Getting Started
 
-First, run the development server:
+Run the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The main landing page is at `src/app/page.tsx`. Auth screens live under `src/app/auth`, and the profile setup flow is under `src/app/setup`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Environment variables
 
-## Learn More
+Create a `.env.local` file with at least:
 
-To learn more about Next.js, take a look at the following resources:
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Adjust the URL to point to your backend.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Disclaimer (Auth for development/testing)
 
-## Deploy on Vercel
+- This app currently uses JWT-only authentication for local development and team testing.
+- Email/phone verification and advanced auth hardening are not enforced yet in this branch.
+- This makes it easy for you and other developers to create multiple test profiles and switch accounts quickly.
+- Do not consider this auth flow production-ready. Before production, add verification, rate limiting, stricter session management, and security reviews.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> master
+- `npm run dev` – start the Next.js dev server
+- `npm run build` – build for production
+- `npm start` – run the production build
+
+## Tech
+
+- Next.js App Router, React, TypeScript
+- Tailwind and shadcn/ui components
+- Redux Toolkit for auth state
+
