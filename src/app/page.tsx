@@ -83,7 +83,7 @@ return (
               Find Your <span className="text-primary">Perfect</span> Match
             </h2>
             <p className="text-xl text-muted-foreground font-semibold">
-              The bold new way to meet people. Swipe right on your future with Charm'd - where real connections happen.
+              The bold new way to meet people. Swipe right on your future with Align'd - where real connections happen.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button 
