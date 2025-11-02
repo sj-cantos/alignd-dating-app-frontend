@@ -7,7 +7,7 @@ import { Heart, MessageCircle, Shield, Sparkles, Zap } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import heroImage from '../../public/hero-dating.jpg'
+import heroImage from '../../assets/hero-dating.jpg'
 import { Card } from '@/components/ui/card';
 export default function Home() {
   const { isAuthenticated, loading, user } = useAuth();

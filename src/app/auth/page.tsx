@@ -7,7 +7,7 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 import { Heart } from 'lucide-react';
 import Image from 'next/image';
-import logoImage from '../../../public/logo.png';
+import logoImage from '../../../assets/logo.png';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
